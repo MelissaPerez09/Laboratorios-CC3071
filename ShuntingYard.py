@@ -13,7 +13,13 @@ class ShuntingYard:
     # Tokenize the input string
     def tokenize(self, input_string):
         cleaned = re.sub(r'\s+', "", input_string)
-        return list(cleaned)
+        tokens = list(cleaned)
+        i = 0
+        while i < len(tokens) - 1:
+            if (tokens[i].isalnum() or tokens[i] == ')' or tokens[i] == '*') and (tokens[i+1].isalnum() or tokens[i+1] == '('):
+                tokens.insert(i+1, '.')
+            i += 1
+        return tokens
 
     # Get precedence of operator
     def getPrecedence(self, operator):
