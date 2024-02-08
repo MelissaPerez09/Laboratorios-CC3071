@@ -23,7 +23,7 @@ class ShuntingYard:
 
     # Get precedence of operator
     def getPrecedence(self, operator):
-        precedence = {'|': 1, '+': 3, '?': 3, '*': 3, '.': 2}
+        precedence = {'|': 1, '*': 3, '.': 2}
         return precedence.get(operator, 0)
 
     # Shunting Yard algorithm

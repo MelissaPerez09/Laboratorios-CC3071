@@ -6,8 +6,8 @@ import re
 from graphviz import Digraph
 
 class Thompson:
-    def __init__(self, epsilon):
-        self.epsilon = epsilon
+    def __init__(self):
+        self.epsilon = "ε"
         
     def convert2NFA(self, postfix_expression):
         regex = postfix_expression
@@ -57,6 +57,7 @@ class Thompson:
                 states[c1][self.epsilon] = (r21, r11)
                 states[r12][self.epsilon] = c2
                 states[r22][self.epsilon] = c2
+            """
             elif i == '+':  # One or more
                 r1, r2 = stack.pop()
                 c1 = counter
@@ -75,6 +76,7 @@ class Thompson:
                 stack.append([c1, c2])
                 states[c1][self.epsilon] = (r1, c2)
                 states[r2][self.epsilon] = c2
+            """
 
         start, end = stack.pop()
         # Re-index states
