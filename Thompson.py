@@ -57,26 +57,6 @@ class Thompson:
                 states[c1][self.epsilon] = (r21, r11)
                 states[r12][self.epsilon] = c2
                 states[r22][self.epsilon] = c2
-            """
-            elif i == '+':  # One or more
-                r1, r2 = stack.pop()
-                c1 = counter
-                counter += 1
-                states.append({})
-                stack.append([r1, c1])
-                states[r2][self.epsilon] = (r1, c1)
-            elif i == '?':  # Zero or one
-                r1, r2 = stack.pop()
-                c1 = counter
-                counter += 1
-                c2 = counter
-                counter += 1
-                states.append({})
-                states.append({})
-                stack.append([c1, c2])
-                states[c1][self.epsilon] = (r1, c2)
-                states[r2][self.epsilon] = c2
-            """
 
         start, end = stack.pop()
         # Re-index states

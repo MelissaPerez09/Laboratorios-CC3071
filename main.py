@@ -24,5 +24,7 @@ print(f"\nPostfix expression: {postfix_expression}")
 converter = Thompson()
 nfa = converter.convert2NFA(postfix_expression)
 converter.graph_nfa(nfa)
-
 #Thompson.process_input(chain, nfa)
+
+# Subsets
+convert_nfa_to_afd_and_graph(nfa)
