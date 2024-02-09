@@ -5,7 +5,7 @@ Parser.py
 
 def parse_optional(regex):
     i = 0
-    result = "("
+    result = ""
     while i < len(regex):
         if i + 1 < len(regex) and regex[i + 1] == "?":
             result += regex[i] + "|ε)"
@@ -52,6 +52,42 @@ def parse_set(regex):
             i += 1
     return result
 
-def parse_regex(regex):
-    return parse_optional(parse_repetitive(parse_set(regex)))
+# Error detection or regex
+def check_valid_symbols(regex):
+    valid_symbols = set("[]-()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    return all(char in valid_symbols for char in regex)
 
+def check_balanced_parentheses(regex):
+    stack = []
+    unbalanced_parentheses = []
+
+    for i, char in enumerate(regex):
+        if char == '(':
+            stack.append((char, i))
+        elif char == ')':
+            if not stack:
+                unbalanced_parentheses.append((char, i, "missing opening"))
+            else:
+                stack.pop()
+
+    for item in stack:
+        unbalanced_parentheses.append(('(', item[1], "missing closure"))
+
+    return len(stack) == 0, unbalanced_parentheses
+
+def parse_regex(regex):
+    valid_symbols = set("[]-()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    invalid_symbols = [char for char in regex if char not in valid_symbols]
+
+    if invalid_symbols:
+        raise ValueError(f">>>Invalid symbol(s) detected: {' '.join(invalid_symbols)}. \nOnly [A-Za-z0-9*+?[],()] are allowed.")
+
+    is_balanced, unbalanced_parentheses = check_balanced_parentheses(regex)
+    if not is_balanced:
+        error_messages = []
+        for char, i, error_type in unbalanced_parentheses:
+            error_messages.append(f">>>Unbalanced parenthesis '{char}': {error_type}.")
+        raise ValueError("\n".join(error_messages))
+
+    # parsing
+    return parse_optional(parse_repetitive(parse_set(regex)))
