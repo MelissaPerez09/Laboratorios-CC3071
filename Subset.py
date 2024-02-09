@@ -3,7 +3,6 @@ Subset.py
 Uses subset construction algorithm to convert NFA to DFA
 """
 
-from Thompson import *
 from collections import deque
 from graphviz import Digraph
 
@@ -87,11 +86,3 @@ class NFAtoAFDConverter:
             graph.edge(str(from_state), str(to_state), label=symbol)
 
         graph.render('afd_fromAFN')
-
-converter = Thompson()
-def convert_nfa_to_afd_and_graph(nfa):
-    # Convert NFA to AFD
-    nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end = converter.get_formatted_afn_params(nfa)
-    afdConverter = NFAtoAFDConverter(nfa_states, nfa_symbols, nfa_transitions, nfa_start, nfa_end)
-    afdConverter.convert_nfa_to_afd()
-    afdConverter.visualize_afd()
