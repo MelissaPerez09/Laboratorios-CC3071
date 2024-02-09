@@ -8,18 +8,20 @@ from collections import deque
 from graphviz import Digraph
 
 class NFAtoAFDConverter:
-    def __init__(self, nfa_states, nfa_symbols, nfa_transitions, nfa_start_state, nfa_accept_states, epsilon="\u03b5"):
+    def __init__(self, nfa_states, nfa_symbols, nfa_transitions, nfa_start_state, nfa_accept_states, epsilon="ε"):
         self.nfa_states = nfa_states
         self.nfa_symbols = nfa_symbols
         self.nfa_transitions = nfa_transitions
         self.nfa_start_state = nfa_start_state
         self.nfa_accept_states = nfa_accept_states
+        self.epsilon = epsilon
+        
+        # Initialize AFD structures
         self.afd_states = set()
-        self.afd_symbols = set()
+        self.afd_symbols = set(nfa_symbols) - {epsilon}
         self.afd_transitions = {}
         self.afd_start_state = None
         self.afd_accept_states = set()
-        self.epsilon = epsilon
         self.convert_nfa_to_afd()
 
     def epsilon_closure(self, states):
@@ -28,141 +30,63 @@ class NFAtoAFDConverter:
         while stack:
             state = stack.pop()
             if state in self.nfa_transitions and self.epsilon in self.nfa_transitions[state]:
-                epsilon_transitions = self.nfa_transitions[state][self.epsilon]
-                for epsilon_state in epsilon_transitions:
-                    if epsilon_state not in epsilon_closure_set:
-                        epsilon_closure_set.add(epsilon_state)
-                        stack.append(epsilon_state)
-        return list(epsilon_closure_set)
+                for next_state in self.nfa_transitions[state][self.epsilon]:
+                    if next_state not in epsilon_closure_set:
+                        epsilon_closure_set.add(next_state)
+                        stack.append(next_state)
+        return epsilon_closure_set
+
+    def move(self, states, symbol):
+        next_states = set()
+        for state in states:
+            if state in self.nfa_transitions and symbol in self.nfa_transitions[state]:
+                next_states.update(self.nfa_transitions[state][symbol])
+        return next_states
 
     def convert_nfa_to_afd(self):
-        start_state = self.epsilon_closure([self.nfa_start_state])
-        state_queue = deque()
-        state_queue.append(start_state)
-        state_mapping = {tuple(start_state): start_state}
+        start_state_closure = self.epsilon_closure([self.nfa_start_state])
+        self.afd_start_state = tuple(start_state_closure)
+        self.afd_states.add(self.afd_start_state)
+        if any(state in self.nfa_accept_states for state in start_state_closure):
+            self.afd_accept_states.add(self.afd_start_state)
 
+        state_queue = deque([start_state_closure])
         while state_queue:
             current_state = state_queue.popleft()
-            self.afd_states.add(tuple(current_state))
-            if any(state in self.nfa_accept_states for state in current_state):
-                self.afd_accept_states.add(tuple(current_state))
-            for symbol in self.nfa_symbols:
-                if symbol == self.epsilon:
-                    continue
-                new_state = []
-                for nfa_state in current_state:
-                    if nfa_state in self.nfa_transitions and symbol in self.nfa_transitions[nfa_state]:
-                        new_state.extend(self.nfa_transitions[nfa_state][symbol])
-                if new_state:
-                    epsilon_closure_set = self.epsilon_closure(new_state)
-                    if tuple(epsilon_closure_set) not in state_mapping:
-                        state_queue.append(epsilon_closure_set)
-                        state_mapping[tuple(epsilon_closure_set)] = epsilon_closure_set
-                    self.afd_transitions[tuple(current_state)] = self.afd_transitions.get(tuple(current_state), {})
-                    self.afd_transitions[tuple(current_state)][symbol] = tuple(epsilon_closure_set)
-
-        self.afd_start_state = tuple(start_state)
-        self.afd_symbols = [symbol for symbol in self.nfa_symbols if symbol != self.epsilon]
-        
-    def get_formatted_afd_params(self):
-        # Map the states to new numbers/labels
-        new_states = []
-        new_state_map = {}
-        for i, state in enumerate(self.afd_states):
-            new_states.append(i)
-            new_state_map[state] = i
-        # Reformat trasitions to comply with new states
-        new_transitions = [self.afd_transitions.get(state) if self.afd_transitions.get(state) is not None else {} for state, new_state in new_state_map.items()]
-        for transition in new_transitions:
             for symbol in self.afd_symbols:
-                if transition.get(symbol) is not None:
-                    transition[symbol] = new_state_map.get(transition.get(symbol))
-        # Set new start, end states according to new_state_map
-        new_start = new_state_map.get(self.afd_start_state)
-        new_end = set([new_state_map.get(end_state) for end_state in self.afd_accept_states])
-        # Return reformatted values in a tuple
-        return (self.afd_symbols, new_transitions, new_start, new_end)
+                next_state_closure = self.epsilon_closure(self.move(current_state, symbol))
+                if not next_state_closure:
+                    continue
+                next_state_closure = tuple(next_state_closure)
+                if next_state_closure not in self.afd_states:
+                    self.afd_states.add(next_state_closure)
+                    state_queue.append(next_state_closure)
+                    if any(state in self.nfa_accept_states for state in next_state_closure):
+                        self.afd_accept_states.add(next_state_closure)
+                self.afd_transitions[(tuple(current_state), symbol)] = next_state_closure
 
-    def get_afd_params(self):
-        return (
-            list(self.afd_states),
-            self.afd_symbols,
-            self.afd_transitions,
-            self.afd_start_state,
-            self.afd_accept_states
-        )
+    def visualize_afd(self):
+        graph = Digraph(format='png', graph_attr={'rankdir': 'LR'})
+        
+        # Create mapping for states to letters
+        state_to_letter = {state: chr(ord('A') + i) for i, state in enumerate(self.afd_states)}
+        
+        graph.attr('node', shape='none', width='0', height='0')
+        graph.node('start', label='', shape='none')
+        graph.edge('start', str(self.afd_start_state), arrowhead='vee')
+        
+        for state, letter in state_to_letter.items():
+            shape = 'doublecircle' if state in self.afd_accept_states else 'circle'
+            graph.node(str(state), label=letter, shape=shape)
 
-class AFD:
-    def __init__(self):
-        self.states = set()
-        self.symbols = set()
-        self.transitions = {}
-        self.start_state = None
-        self.accept_states = set()
+        for state in self.afd_states:
+            shape = 'doublecircle' if state in self.afd_accept_states else 'circle'
+            graph.node(str(state), shape=shape)
 
-    def add_states(self, states):
-        self.states.update(states)
-        # Initialize transitions for each state
-        for state in states:
-            self.transitions[state] = {}
+        for (from_state, symbol), to_state in self.afd_transitions.items():
+            graph.edge(str(from_state), str(to_state), label=symbol)
 
-    def add_symbols(self, symbols):
-        self.symbols.update(symbols)
-
-    def add_transition(self, from_state, symbol, to_state):
-        # Ensure that from_state exists in transitions
-        if from_state not in self.transitions:
-            self.transitions[from_state] = {}
-        self.transitions[from_state][symbol] = to_state
-    
-    def set_start_state(self, state):
-        self.start_state = state
-    
-    def add_accept_states(self, states):
-        self.accept_states.update(states)
-
-    def is_accepted(self, state):
-        return state in self.accept_states
-
-    def process_input(self, input_string):
-        current_state = self.start_state
-        for symbol in input_string:
-            if symbol not in self.symbols:
-                return False
-            if current_state in self.transitions and symbol in self.transitions[current_state]:
-                current_state = self.transitions[current_state][symbol]
-            else:
-                return False
-        return self.is_accepted(current_state)
-
-    def graph_afd(self, filename='./afd', format='png'):
-        f = Digraph('finite_state_machine', filename='afd.gv')
-        f.attr(rankdir='LR', size='8,5')
-    
-        # Add nodes for states
-        f.attr('node', shape='doublecircle')
-        for state in self.accept_states:
-            f.node(str(state))
-
-        f.attr('node', shape='circle')
-        for state in self.states:
-            if state not in self.accept_states:
-                f.node(str(state))
-
-        # Add an invisible node for the start arrow
-        f.attr('node', shape='none', width='0', height='0')
-        f.node('start')
-
-        # Add an edge from the invisible node to the start state
-        f.edge('start', str(self.start_state), color='black')
-
-        # Add transitions
-        for from_state, transitions in self.transitions.items():
-            for symbol, to_state in transitions.items():
-                f.edge(str(from_state), str(to_state), label=symbol)
-
-        f.render(filename=filename, format=format, cleanup=True)
-
+        graph.render('afd_fromAFN')
 
 converter = Thompson()
 def convert_nfa_to_afd_and_graph(nfa):
@@ -170,16 +94,4 @@ def convert_nfa_to_afd_and_graph(nfa):
     nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end = converter.get_formatted_afn_params(nfa)
     afdConverter = NFAtoAFDConverter(nfa_states, nfa_symbols, nfa_transitions, nfa_start, nfa_end)
     afdConverter.convert_nfa_to_afd()
-    afd_results = afdConverter.get_afd_params()
-    afd_formatted_results = afdConverter.get_formatted_afd_params()
-
-    # Create AFD instance
-    afd_instance = AFD()
-    afd_instance.add_states(afd_results[0])
-    afd_instance.add_symbols(afd_results[1])
-    afd_instance.transitions = afd_results[2]
-    afd_instance.set_start_state(afd_results[3])
-    afd_instance.add_accept_states(afd_results[4])
-
-    # Graph AFD
-    afd_instance.graph_afd()
+    afdConverter.visualize_afd()
