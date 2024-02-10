@@ -77,14 +77,30 @@ class Thompson:
         nfa_states = [i for i in range(len(nfa_og_transitions))]
         nfa_transitions = {}
         for i in range(len(nfa_og_transitions)):
-            new_transition = {}
-            for symbol in nfa_symbols:
-                if nfa_og_transitions[i].get(symbol) is not None:
-                    next_states = nfa_og_transitions[i].get(symbol)
-                    new_transition[symbol] = [next_states] if not isinstance(next_states, tuple) else list(next_states)
-            nfa_transitions[i] = new_transition
-            
-        return (nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end)
+            if isinstance(nfa_og_transitions[i], dict):
+                new_transition = {}
+                for symbol in nfa_symbols:
+                    if isinstance(nfa_og_transitions[i].get(symbol), (tuple, list)):
+                        next_states = nfa_og_transitions[i].get(symbol)
+                    elif nfa_og_transitions[i].get(symbol) is not None:
+                        next_states = [nfa_og_transitions[i].get(symbol)]
+                    else:
+                        next_states = []
+                    new_transition[symbol] = next_states
+                nfa_transitions[i] = new_transition
+        return nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end
+
+    def epsilon_closure(self, states, nfa_transitions):
+        closure = set(states)
+        stack = list(states)
+        while stack:
+            state = stack.pop()
+            epsilon_transitions = nfa_transitions.get(state, {}).get(self.epsilon, [])
+            for next_state in epsilon_transitions:
+                if next_state not in closure:
+                    closure.add(next_state)
+                    stack.append(next_state)
+        return closure
 
     def graph_nfa(self, nfa):
         nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end = self.get_formatted_afn_params(nfa)
@@ -109,7 +125,7 @@ class Thompson:
         f.edge('start', str(nfa_start), color='black')
 
         # Sort transitions by the minimum reachable state
-        sorted_transitions = sorted(nfa_transitions.items(), key=lambda t: min(min(v) if isinstance(v, (tuple, list)) else v for v in t[1].values()) if t[1].values() else 0)
+        sorted_transitions = sorted(nfa_transitions.items(), key=lambda t: min(min(v) if isinstance(v, (tuple, list)) else v for v in t[1]) if t[1] else 0)
 
         for state, transitions in sorted_transitions:
             for symbol, next_states in transitions.items():
@@ -117,24 +133,18 @@ class Thompson:
                     f.edge(str(state), str(next_state), label=symbol)
 
         f.render(filename='nfa', format='png', cleanup=True)
-    
-    def process_input(self, input_strings, nfa):
-        keys, states, start, end = nfa
-        for input_string in input_strings:
-            current_states = {start}  # Initially, the current state is the start state
-            current_states = self.epsilon_closure(current_states, states)
-            for symbol in input_string:
-                next_states = set()
-                for state in current_states:
-                    if symbol in states[state]:
-                        transition = states[state][symbol]
-                        if isinstance(transition, tuple):
-                            next_states.update(transition)
-                        else:
-                            next_states.add(transition)
-                current_states = self.epsilon_closure(next_states, states)
-            # After processing the string, check if the current state is in the accept state
-            if end in current_states:
-                print(f"'{input_string}' is accepted")
-            else:
-                print(f"'{input_string}' is not accepted")
+
+    def simulate_nfa(self, nfa, input_chain):
+        _, nfa_states, nfa_transitions, nfa_start, nfa_end = self.get_formatted_afn_params(nfa)
+
+        current_states = self.epsilon_closure({nfa_start}, nfa_transitions)
+
+        for symbol in input_chain:
+            next_states = set()
+            for state in current_states:
+                if symbol in nfa_transitions[state]:
+                    for next_state in nfa_transitions[state][symbol]:
+                        next_states.update(self.epsilon_closure({next_state}, nfa_transitions))
+            current_states = next_states
+
+        return not nfa_end.isdisjoint(current_states)

@@ -86,3 +86,18 @@ class NFAtoAFDConverter:
             graph.edge(str(from_state), str(to_state), label=symbol)
 
         graph.render('afd_fromAFN')
+    
+    def simulate_dfa(self, input_chain):
+        # Start from the DFA's start state
+        current_state = self.afd_start_state
+        for symbol in input_chain:
+            # Transition to the next state based on the current symbol
+            current_state_tuple = (current_state, symbol)  # Current state as tuple for lookup
+            if current_state_tuple in self.afd_transitions:
+                current_state = self.afd_transitions[current_state_tuple]
+            else:
+                # If there's no transition for this symbol from the current state, the input is not accepted
+                return False
+        
+        # Check if the ending state is one of the accept states
+        return current_state in self.afd_accept_states

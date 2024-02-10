@@ -48,7 +48,7 @@ class ShuntingYard:
                     stack.pop()
             else:
                 # Pop operators from stack with higher precedence to output
-                while stack and self.getPrecedence(stack[-1]) > self.getPrecedence(token):
+                while stack and self.getPrecedence(stack[-1]) >= self.getPrecedence(token):
                     output.append(stack.pop())
                 stack.append(token)
 

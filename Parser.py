@@ -54,7 +54,7 @@ def parse_set(regex):
 
 # Error detection or regex
 def check_valid_symbols(regex):
-    valid_symbols = set("[]-()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
     return all(char in valid_symbols for char in regex)
 
 def check_balanced_parentheses(regex):
@@ -75,12 +75,22 @@ def check_balanced_parentheses(regex):
 
     return len(stack) == 0, unbalanced_parentheses
 
+def check_consecutive_operators(regex):
+    consecutive_operators = ['??', '++', '**']
+    for op in consecutive_operators:
+        if op in regex:
+            return False
+    return True
+
 def parse_regex(regex):
-    valid_symbols = set("[]-()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
     invalid_symbols = [char for char in regex if char not in valid_symbols]
 
     if invalid_symbols:
         raise ValueError(f">>>Invalid symbol(s) detected: {' '.join(invalid_symbols)}. \nOnly [A-Za-z0-9*+?[],()] are allowed.")
+
+    if not check_consecutive_operators(regex):
+        raise ValueError(">>>Consecutive operators are not permitted. Use one at a time.")
 
     is_balanced, unbalanced_parentheses = check_balanced_parentheses(regex)
     if not is_balanced:
