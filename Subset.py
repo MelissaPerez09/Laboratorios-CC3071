@@ -23,6 +23,11 @@ class NFAtoAFDConverter:
         self.afd_accept_states = set()
         self.convert_nfa_to_afd()
 
+    """
+    Epsilon Closure
+    :param states: Set of states
+    Calcula el cierre epsilon de un conjunto de estados
+    """
     def epsilon_closure(self, states):
         epsilon_closure_set = set(states)
         stack = list(states)
@@ -35,6 +40,11 @@ class NFAtoAFDConverter:
                         stack.append(next_state)
         return epsilon_closure_set
 
+    """
+    Move
+    :param states: Set of states, symbol: Symbol
+    Calcula el conjunto de estados a los que se puede llegar desde un conjunto de estados con un símbolo
+    """
     def move(self, states, symbol):
         next_states = set()
         for state in states:
@@ -42,6 +52,10 @@ class NFAtoAFDConverter:
                 next_states.update(self.nfa_transitions[state][symbol])
         return next_states
 
+    """
+    Convert NFA to AFD
+    Crea los estados y transiciones del AFD a partir del AFN.
+    """
     def convert_nfa_to_afd(self):
         start_state_closure = self.epsilon_closure([self.nfa_start_state])
         self.afd_start_state = tuple(start_state_closure)
@@ -64,6 +78,10 @@ class NFAtoAFDConverter:
                         self.afd_accept_states.add(next_state_closure)
                 self.afd_transitions[(tuple(current_state), symbol)] = next_state_closure
 
+    """
+    Visualize the AFD
+    Crea un gráfico del AFD
+    """
     def visualize_afd(self):
         graph = Digraph(format='png', graph_attr={'rankdir': 'LR'})
         
@@ -87,6 +105,11 @@ class NFAtoAFDConverter:
 
         graph.render('afd_fromAFN')
     
+    """
+    Simulate the DFA
+    :param input_chain: Input chain
+    Simula el AFD con una cadena de entrada y devuelve si la cadena es aceptada
+    """
     def simulate_dfa(self, input_chain):
         # Start from the DFA's start state
         current_state = self.afd_start_state

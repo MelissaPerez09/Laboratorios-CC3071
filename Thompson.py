@@ -8,7 +8,12 @@ from graphviz import Digraph
 class Thompson:
     def __init__(self):
         self.epsilon = "ε"
-        
+    
+    """
+    Convert postfix expression to NFA
+    :param postfix_expression: Postfix expression
+    Guarda los estados, transiciones y simbolos de la expresion regular
+    """
     def convert2NFA(self, postfix_expression):
         regex = postfix_expression
 
@@ -71,6 +76,14 @@ class Thompson:
 
         return (keys, new_states, state_mapping[start], state_mapping[end])
     
+    """
+    Get formatted AFN parameters
+    :param afn: AFN tuple
+    Convierte el estado final en un conjunto, 
+    genera una lista de estados basada en las transiciones 
+    y reformatea las transiciones para que cada estado tenga una 
+    lista de estados siguientes para cada símbolo
+    """
     def get_formatted_afn_params(self, afn: tuple) -> tuple:
         nfa_symbols, nfa_og_transitions, nfa_start, nfa_end = afn
         nfa_end = {nfa_end} # Convert end state to a set
@@ -90,6 +103,11 @@ class Thompson:
                 nfa_transitions[i] = new_transition
         return nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end
 
+    """
+    Epsilon Closure
+    :param states: Set of states
+    Calcula el cierre epsilon de un conjunto de estados
+    """
     def epsilon_closure(self, states, nfa_transitions):
         closure = set(states)
         stack = list(states)
@@ -102,6 +120,11 @@ class Thompson:
                     stack.append(next_state)
         return closure
 
+    """
+    Graph NFA
+    :param nfa
+    Crea un nodo para cada estado y una arista para cada transición
+    """
     def graph_nfa(self, nfa):
         nfa_symbols, nfa_states, nfa_transitions, nfa_start, nfa_end = self.get_formatted_afn_params(nfa)
 
@@ -134,6 +157,11 @@ class Thompson:
 
         f.render(filename='nfa', format='png', cleanup=True)
 
+    """
+    Simulate NFA
+    :param nfa: NFA tuple
+    simula la ejecución de un NFA en una cadena de entrada y verifica si la cadena es aceptada
+    """
     def simulate_nfa(self, nfa, input_chain):
         _, nfa_states, nfa_transitions, nfa_start, nfa_end = self.get_formatted_afn_params(nfa)
 

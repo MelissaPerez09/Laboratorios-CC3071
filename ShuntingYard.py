@@ -10,7 +10,11 @@ class ShuntingYard:
         self.tokens = self.tokenize(input_string)
         self.epsilon = "ε"
 
-    # Tokenize the input string
+    """
+    Tokenize the input string
+    :param input_string: Input string
+    Divide la cadena en tokens y coloca concatenaciones implícitas
+    """
     def tokenize(self, input_string):
         cleaned = re.sub(r'\s+', "", input_string)
         tokens = list(cleaned)
@@ -21,12 +25,21 @@ class ShuntingYard:
             i += 1
         return tokens
 
-    # Get precedence of operator
+    """
+    Get precedence of operator
+    :param operator: Operator
+    devuelve la precedencia de un operador
+    """
     def getPrecedence(self, operator):
         precedence = {'|': 1, '*': 3, '.': 2}
         return precedence.get(operator, 0)
 
-    # Shunting Yard algorithm
+    """
+    Shunting Yard algorithm
+    :param tokens: Tokens
+    Convierte la expresión regular de la notación infija a la notación postfija
+    Recorre la lista de tokens y los va colocando en la pila o en la salida dependiendo de su precedencia
+    """
     def shuntingYard(self):
         # Lists to store output and stack
         output = []

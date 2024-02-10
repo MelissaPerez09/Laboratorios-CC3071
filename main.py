@@ -32,7 +32,7 @@ try:
     print(f"Chain '{chain}' is accepted: {is_accepted}")
 
     # Subsets
-    afd = NFAtoAFDConverter(nfa_states, nfa_symbols, nfa_transitions, nfa_start, nfa_end)
+    afd = NFAtoAFDConverter(nfa_states, nfa_symbols, nfa_transitions, nfa_start, nfa_end)   # instancia de la clase NFAtoAFDConverter con los parametros de la clase Thompson
     afd.convert_nfa_to_afd()
     afd.visualize_afd()
     print("\n--DFA--\nSuccessfully graphed in 'afd_fromAFN.png'")
@@ -47,9 +47,9 @@ try:
         afd.afd_transitions,
         afd.afd_start_state,
         afd.afd_accept_states
-    )
-    minimized_afd = minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states)
-    new_states, new_symbols, new_transitions, new_start_state, new_accept_states = minimized_afd
+    ) # se obtienen los atributos de la clase afd
+    minimized_afd = minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states) 
+    new_states, new_symbols, new_transitions, new_start_state, new_accept_states = minimized_afd # se obtienen los atributos de la clase minimize_afd
     visualize_minimized_afd(new_states, new_symbols, new_transitions, new_start_state, new_accept_states)
     print("\n--Min DFA--\nSuccessfully graphed in 'minimized_afd.png'")
     dfa_minimizer = DFAMinimizer(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states)

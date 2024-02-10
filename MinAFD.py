@@ -1,6 +1,6 @@
 """
 MinAFD.py
-Minimization of and AFD
+Minimization of and AFD using Hopcroft's algorithm
 """
 
 from graphviz import Digraph
@@ -13,6 +13,10 @@ class DFAMinimizer:
         self.afd_start_state = afd_start_state
         self.afd_accept_states = set(afd_accept_states)
 
+    """
+    Find equivalence classes
+    minimización de estados de Hopcroft
+    """
     def find_equivalence_classes(self):
         # Initial partition: Accepting and non-accepting states
         P = {frozenset(self.afd_accept_states), frozenset(set(self.afd_states) - self.afd_accept_states)}
@@ -48,6 +52,10 @@ class DFAMinimizer:
                 P = P_new
         return P
 
+    """
+    Minimize the AFD
+    con las clases de equivalencia encontradas, se minimiza el AFD
+    """
     def minimize(self):
         equivalence_classes = self.find_equivalence_classes()
 
@@ -73,6 +81,11 @@ class DFAMinimizer:
 
         return new_states, self.afd_symbols, new_transitions, new_start_state, new_accept_states
     
+    """
+    Simulate the minimized AFD
+    :param input_chain: Input chain
+    Simula el AFD minimizado con una cadena de entrada y devuelve si la cadena es aceptada
+    """
     def simulate_minafd(self, input_chain):
         # Start from the minDFA's start state
         current_state = self.afd_start_state
@@ -87,7 +100,12 @@ class DFAMinimizer:
 
         # Check if the ending state is one of the accept states
         return current_state in self.afd_accept_states
-    
+
+"""
+Minimize an AFD
+:param afd_states: States, afd_symbols, afd_transitions: Transitions, afd_start_state: Start state, afd_accept_states: Accept states
+Crea una instancia de DFAMinimizer y minimiza el AFD
+"""
 def minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states):
     dfa_minimizer = DFAMinimizer(
         afd_states, 
@@ -99,6 +117,11 @@ def minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_
     minimized_afd = dfa_minimizer.minimize()
     return minimized_afd
 
+"""
+Visualize the minimized AFD
+:param states: States, symbols: Symbols, transitions: Transitions, start_state: Start state, accept_states: Accept states
+Crea un gráfico del AFD minimizado
+"""
 def visualize_minimized_afd(states, symbols, transitions, start_state, accept_states):
     graph = Digraph(format='png', graph_attr={'rankdir': 'LR'})
     

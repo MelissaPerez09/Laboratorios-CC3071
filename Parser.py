@@ -1,8 +1,13 @@
 """
 Parser.py
-
+Parses the regular expression and checks for errors
 """
 
+"""
+Parse the optional operator "?"
+:param regex: Regular expression
+Reemplaza el operador con una cadena vacía
+"""
 def parse_optional(regex):
     i = 0
     result = ""
@@ -15,6 +20,11 @@ def parse_optional(regex):
             i += 1
     return result
 
+"""
+Parse the repetitive "+"
+:param regex: Regular expression
+Reemplaza con una concatenación con una repetición
+"""
 def parse_repetitive(regex):
     i = 0
     result = ""
@@ -32,6 +42,11 @@ def parse_repetitive(regex):
             i += 1
     return result
 
+"""
+Parse the set of characters
+:param char_range: Character range
+Devuelve una lista de caracteres del rango
+"""
 def parse_range(char_range):
     if len(char_range) == 1:
         return char_range
@@ -39,6 +54,11 @@ def parse_range(char_range):
         start, end = char_range[0], char_range[-1]
         return [chr(char) for char in range(ord(start), ord(end) + 1)]
 
+"""
+Parse the set of characters
+:param regex: Regular expression
+Reemplaza el conjunto de caracteres con una cadena de caracteres
+"""
 def parse_set(regex):
     i = 0
     result = ""
@@ -53,10 +73,20 @@ def parse_set(regex):
     return result
 
 # Error detection or regex
+"""
+Check if the regex contains valid symbols
+:param regex: Regular expression
+Devuelve True si todos los símbolos son válidos
+"""
 def check_valid_symbols(regex):
-    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?ε")
     return all(char in valid_symbols for char in regex)
 
+"""
+Check balanced parentheses
+:param regex: Regular expression
+Devuelve True si los paréntesis están balanceados
+"""
 def check_balanced_parentheses(regex):
     stack = []
     unbalanced_parentheses = []
@@ -75,6 +105,11 @@ def check_balanced_parentheses(regex):
 
     return len(stack) == 0, unbalanced_parentheses
 
+"""
+Check consecutive operators
+:param regex: Regular expression
+Devuelve True si no hay operadores consecutivos
+"""
 def check_consecutive_operators(regex):
     consecutive_operators = ['??', '++', '**']
     for op in consecutive_operators:
@@ -82,8 +117,13 @@ def check_consecutive_operators(regex):
             return False
     return True
 
+"""
+Parse the regular expression
+:param regex: Regular expression
+Devuelve la expresión regular analizada
+"""
 def parse_regex(regex):
-    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?ε")
     invalid_symbols = [char for char in regex if char not in valid_symbols]
 
     if invalid_symbols:
