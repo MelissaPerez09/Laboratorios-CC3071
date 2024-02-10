@@ -49,8 +49,11 @@ try:
         afd.afd_accept_states
     )
     minimized_afd = minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states)
+    new_states, new_symbols, new_transitions, new_start_state, new_accept_states = minimized_afd
+    visualize_minimized_afd(new_states, new_symbols, new_transitions, new_start_state, new_accept_states)
     print("\n--Min DFA--\nSuccessfully graphed in 'minimized_afd.png'")
-    is_accepted3 = minimized_afd.simulate_minafd(chain)
+    dfa_minimizer = DFAMinimizer(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states)
+    is_accepted3 = dfa_minimizer.simulate_minafd(chain)
     print(f"Chain '{chain}' is accepted: {is_accepted3}")
 
 except Exception as e:

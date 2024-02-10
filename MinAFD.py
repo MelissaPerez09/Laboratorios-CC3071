@@ -96,8 +96,8 @@ def minimize_afd(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_
         afd_start_state, 
         afd_accept_states
     )
-    dfa_minimizer.minimize()
-    return dfa_minimizer
+    minimized_afd = dfa_minimizer.minimize()
+    return minimized_afd
 
 def visualize_minimized_afd(states, symbols, transitions, start_state, accept_states):
     graph = Digraph(format='png', graph_attr={'rankdir': 'LR'})

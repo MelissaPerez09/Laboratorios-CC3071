@@ -146,5 +146,5 @@ class Thompson:
                     for next_state in nfa_transitions[state][symbol]:
                         next_states.update(self.epsilon_closure({next_state}, nfa_transitions))
             current_states = next_states
-
-        return not nfa_end.isdisjoint(current_states)
+        
+        return bool(current_states & nfa_end)
