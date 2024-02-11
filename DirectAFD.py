@@ -15,10 +15,20 @@ class DirectAFD:
         self.right = None
 
 # Step 1: Increase r
+"""
+Increase r
+:param regex: The regular expression
+Aumenta r en notación postfix con #
+"""
 def increaseR(regex):
     return regex + '#.'
 
 # Step 2: Construct a syntax tree t from r
+"""
+Construct a syntax tree t from r
+:param postfix: The postfix regular expression
+Construye el árbol de sintaxis directamente desde la expresión regular en notación postfix
+"""
 def construct_syntax_tree(postfix):
     stack = []
     position = 0
@@ -47,6 +57,11 @@ def construct_syntax_tree(postfix):
     return stack.pop()
 
 # Step 3: Label the leaves of the syntax tree
+"""
+Label the leaves of the syntax tree
+:param node: The current node
+Etiqueta las hojas del árbol de sintaxis
+"""
 def label_leaves(node, label=0):
     if node:
         if node.left is None and node.right is None:
@@ -57,6 +72,11 @@ def label_leaves(node, label=0):
     return label
 
 # Step 4: Calculate the nullable function
+"""
+Calculate the nullable function
+:param node: The current node
+Calcula la función anulable
+"""
 def calculate_nullable(node):
     if node is None:
         return False
@@ -71,10 +91,15 @@ def calculate_nullable(node):
     return False
 
 # Step 5: Calculate the first position function
+"""
+Calculate the first position function
+:param node: The current node
+Calcula la función de primera posición
+"""
 def calculate_first_position(node):
     if node is None:
         return set()
-    if node.value in ['a', 'b']:  # Assuming leaf nodes contain 'a' or 'b'
+    if node.value.isalnum() or node.value == '#':
         return {node.position}
     if node.value == '|':
         return calculate_first_position(node.left) | calculate_first_position(node.right)
@@ -88,10 +113,15 @@ def calculate_first_position(node):
     return set()
 
 # Step 6: Calculate the last position function
+"""
+Calculate the last position function
+:param node: The current node
+Calcula la función de última posición
+"""
 def calculate_last_position(node):
     if node is None:
         return set()
-    if node.value in ['a', 'b']:
+    if node.value.isalnum() or node.value == '#':
         return {node.position}
     if node.value == '|':
         return calculate_last_position(node.left) | calculate_last_position(node.right)
@@ -105,6 +135,11 @@ def calculate_last_position(node):
     return set()
 
 # Step 7: Calculate the follow position function
+"""
+Calculate the follow position function
+:param node: The current node, follow_pos: The follow position dictionary
+Calcula la función de posición de seguimiento
+"""
 def calculate_follow_pos(node, follow_pos=None):
     if follow_pos is None:
         follow_pos = {i: set() for i in range(label_leaves(node))}  # Initialize follow_pos with positions
@@ -127,6 +162,11 @@ def calculate_follow_pos(node, follow_pos=None):
 
     return follow_pos
 
+"""
+Find a node by position
+:param node: The current node, position: The position to find
+Encuentra un nodo por posición
+"""
 def find_node_by_position(node, position):
     if node is None:
         return None
@@ -141,8 +181,22 @@ def find_node_by_position(node, position):
     return None
 
 # Step 8: Construct the DFA
+"""
+Construct the DFA
+:param syntax_tree: The syntax tree, follow_pos: The follow position dictionary
+Construye el DFA siguiendo el árbol de sintaxis y la función de posición de seguimiento
+"""
 def construct_dfa_states_and_transitions(syntax_tree, follow_pos):
-    alphabet = {'a', 'b', '0', '1', '2'}  # Ensure this includes all characters in your regex
+    alphabet = set()
+
+    def extract_alphabet(node):
+        if node:
+            if node.value.isalnum():
+                alphabet.add(node.value)
+            extract_alphabet(node.left)
+            extract_alphabet(node.right)
+    extract_alphabet(syntax_tree)
+
     start_state = frozenset(calculate_first_position(syntax_tree))
     states = {start_state}
     dfa_transitions = {}
@@ -157,22 +211,31 @@ def construct_dfa_states_and_transitions(syntax_tree, follow_pos):
                 if node and node.value == char:
                     next_state.update(follow_pos.get(pos, set()))
 
-            if next_state:
-                next_state_frozen = frozenset(next_state)
-                if next_state_frozen not in states:
-                    states.add(next_state_frozen)
-                    queue.append(next_state_frozen)
+            next_state_frozen = frozenset(next_state)
+            if next_state and next_state_frozen not in states:
+                states.add(next_state_frozen)
+                queue.append(next_state_frozen)
+            if next_state:  # This ensures transitions to empty sets are not created
                 dfa_transitions[(current_state, char)] = next_state_frozen
 
     return states, dfa_transitions
 
-# Step 9: Construct transition table
+"""
+Find accept states
+:param states: The states, syntax_tree: The syntax tree
+Encuentra los estados de aceptación
+"""
+# Step 9: Find accept states
 def find_accept_states(states, syntax_tree):
-    # Assuming the end marker '#' is assigned the highest position
-    end_position = max(label_leaves(syntax_tree) - 1, 0)  # Adjust based on your labeling logic
+    end_position = max(label_leaves(syntax_tree) - 1, 0)
     accept_states = {state for state in states if end_position in state}
     return accept_states
 
+"""
+Draw the DFA
+:param dfa_transitions: The DFA transitions, start_state: The start state, accept_states: The accept states
+Dibuja el DFA
+"""
 # Step 10: Simulate the DFA
 def draw_dfa(dfa_transitions, start_state, accept_states):
     graph = Digraph(format='png', graph_attr={'rankdir': 'LR'})
@@ -183,7 +246,7 @@ def draw_dfa(dfa_transitions, start_state, accept_states):
     
     graph.attr('node', shape='none', width='0', height='0')
     graph.node('start', label='', shape='none')
-    start_state_letter = state_to_number.get(start_state, 'X')  # Default to 'X' if start_state is not found
+    start_state_letter = state_to_number.get(start_state, 'X')
     graph.edge('start', start_state_letter, arrowhead='vee')
     
     for state, letter in state_to_number.items():
@@ -196,38 +259,41 @@ def draw_dfa(dfa_transitions, start_state, accept_states):
         graph.edge(from_state_str, to_state_str, label=input_char)
     graph.render('dfa_graph')
 
-def main():
-    #regex = "1"
-    regex = "(a|b)*abb"
-    #regex = "(aa)*(bb)*"
-    parsed_regex = parse_regex(regex)  # Ensure this correctly parses the regex
-    postfix_expression = ShuntingYard(parsed_regex).shuntingYard()  # Ensure this correctly converts to postfix
-    syntax_tree = construct_syntax_tree(postfix_expression)
-    label_leaves(syntax_tree)  # Ensure positions are labeled
+"""
+Apply direct method
+:param postfix_expression: The postfix expression
+Aplica el método directo para convertir la expresión regular en un DFA con las funciones anteriores
+"""
+def applyDirect(regex):
+    regex = parse_regex(regex)
+    postfix = ShuntingYard(regex).shuntingYard()
+    aumentada = increaseR(postfix)
+    syntax_tree = construct_syntax_tree(aumentada)
+    label_leaves(syntax_tree)
     
-    # Calculate follow_pos
     follow_pos = calculate_follow_pos(syntax_tree)
     
-    # Now pass follow_pos as an argument
     states, dfa_transitions = construct_dfa_states_and_transitions(syntax_tree, follow_pos)
-
-    # Print states and transitions for verification
-    print("DFA States:")
-    for state in states:
-        print(f"State: {state}")
-
-    print("\nDFA Transitions:")
-    for key, value in dfa_transitions.items():
-        print(f"Transition from {key[0]} on '{key[1]}' to {value}")
-
+    
     start_state = frozenset(calculate_first_position(syntax_tree))
     states, dfa_transitions = construct_dfa_states_and_transitions(syntax_tree, follow_pos)
 
-    # Identify accept states
     accept_states = find_accept_states(states, syntax_tree)
-
-    # Adjusted call to draw_dfa with start_state and accept_states
     draw_dfa(dfa_transitions, start_state, accept_states)
 
-if __name__ == "__main__":
-    main()
+    return dfa_transitions, start_state, accept_states
+
+"""
+Simulate the direct AFD
+:param dfa_transitions: The DFA transitions, start_state: The start state, accept_states: The accept states, input_chain: The input chain
+Simula el AFD directamente con una cadena de entrada y devuelve si la cadena es aceptada
+"""
+def simulate_direct_afd(dfa_transitions, start_state, accept_states, input_chain):
+    current_state = start_state
+    for symbol in input_chain:
+        current_state_tuple = (current_state, symbol)
+        if current_state_tuple in dfa_transitions:
+            current_state = dfa_transitions[current_state_tuple]
+        else:
+            return False
+    return current_state in accept_states

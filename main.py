@@ -8,6 +8,7 @@ from ShuntingYard import *
 from Thompson import *
 from Subset import *
 from MinAFD import *
+from DirectAFD import *
 
 expression = input("Enter the regular expression:\n  >>> ")
 chain = input("Enter the chain:\n  >>> ")
@@ -55,6 +56,13 @@ try:
     dfa_minimizer = DFAMinimizer(afd_states, afd_symbols, afd_transitions, afd_start_state, afd_accept_states)
     is_accepted3 = dfa_minimizer.simulate_minafd(chain)
     print(f"Chain '{chain}' is accepted: {is_accepted3}")
+    
+    # Direct AFD
+    dfa_transitions, start_state, accept_states = applyDirect(expression)
+    print("\n--Direct DFA--\nSuccessfully graphed in 'dfa_graph.png'")
+    is_accepted4 = simulate_direct_afd(dfa_transitions, start_state, accept_states, chain)
+    print(f"Chain '{chain}' is accepted: {is_accepted4}")
+    
 
 except Exception as e:
     print(e)
