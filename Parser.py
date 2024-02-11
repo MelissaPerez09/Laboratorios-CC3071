@@ -6,14 +6,22 @@ Parses the regular expression and checks for errors
 """
 Parse the optional operator "?"
 :param regex: Regular expression
-Reemplaza el operador con una cadena vacía
+Reemplaza el operador con una cadena vacía ε
 """
 def parse_optional(regex):
     i = 0
     result = ""
     while i < len(regex):
         if i + 1 < len(regex) and regex[i + 1] == "?":
-            result += regex[i] + "|ε)"
+            if regex[i] == ")":
+                open_bracket_index = result.rfind("(")
+                if open_bracket_index != -1:
+                    result = result[:open_bracket_index] + "((" + result[open_bracket_index+1:] + ")|ε)"
+            elif regex[i] in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789":
+                if result:
+                    result = result[:-1] + result[-1] + "(" + regex[i] + "|ε)"
+                else:
+                    result += "(" + regex[i] + "|ε)"
             i += 2
         else:
             result += regex[i]
@@ -34,8 +42,8 @@ def parse_repetitive(regex):
                 open_index = regex.rfind("(", 0, i)
                 repeated = regex[open_index + 1:i]
                 result = result[:open_index + 1] + "(" + repeated + ")" + "(" + repeated + ")*)" + result[i + 1:]
-            else:
-                result += "(" + regex[i] + ")"
+            if regex[i] in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789":
+                result += regex[i] + regex[i] + "*"
             i += 2
         else:
             result += regex[i]
@@ -141,3 +149,5 @@ def parse_regex(regex):
 
     # parsing
     return parse_optional(parse_repetitive(parse_set(regex)))
+
+# programmed by @melissaperez_

@@ -124,3 +124,5 @@ class NFAtoAFDConverter:
         
         # Check if the ending state is one of the accept states
         return current_state in self.afd_accept_states
+
+# programmed by @melissaperez_

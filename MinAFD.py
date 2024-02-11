@@ -141,3 +141,4 @@ def visualize_minimized_afd(states, symbols, transitions, start_state, accept_st
 
     graph.render('minimized_afd')
 
+# programmed by @melissaperez_

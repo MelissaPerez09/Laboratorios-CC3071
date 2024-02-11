@@ -297,3 +297,5 @@ def simulate_direct_afd(dfa_transitions, start_state, accept_states, input_chain
         else:
             return False
     return current_state in accept_states
+
+# programmed by @melissaperez_

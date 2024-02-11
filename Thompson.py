@@ -176,3 +176,5 @@ class Thompson:
             current_states = next_states
         
         return bool(current_states & nfa_end)
+    
+# programmed by @melissaperez_
