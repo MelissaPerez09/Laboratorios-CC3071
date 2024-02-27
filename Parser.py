@@ -40,11 +40,12 @@ def parse_repetitive(regex):
         if i + 1 < len(regex) and regex[i + 1] == "+":
             if regex[i] == ")":
                 open_index = regex.rfind("(", 0, i)
-                repeated = regex[open_index + 1:i]
-                result = result[:open_index + 1] + "(" + repeated + ")" + "(" + repeated + ")*)" + result[i + 1:]
-            if regex[i] in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789":
-                result += regex[i] + regex[i] + "*"
-            i += 2
+                repeated = parse_repetitive(regex[open_index + 1:i])
+                result = result[:open_index] + "(" + repeated + ")" + "(" + repeated + ")*"
+                i += 2
+            else:
+                result += "(" + regex[i] + regex[i] + "*)"
+                i += 2
         else:
             result += regex[i]
             i += 1
