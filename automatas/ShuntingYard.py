@@ -3,7 +3,6 @@ ShunttungYard.py
 Uses Shuting Yard algorithm to parse infix expression to postfix
 """
 
-import re
 class ShuntingYard:
     # Constructor
     def __init__(self, input_string):
@@ -16,7 +15,7 @@ class ShuntingYard:
     Divide la cadena en tokens y coloca concatenaciones implícitas
     """
     def tokenize(self, input_string):
-        cleaned = re.sub(r'\s+', "", input_string)
+        cleaned = input_string.replace(" ", "")
         tokens = list(cleaned)
         i = 0
         while i < len(tokens) - 1:

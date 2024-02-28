@@ -2,7 +2,7 @@
 Thompson.py
 Uses McNaughton–Yamada–Thompson algorithm to convert postfix expression to NFA
 """
-import re
+
 from graphviz import Digraph
 
 class Thompson:
@@ -17,7 +17,7 @@ class Thompson:
     def convert2NFA(self, postfix_expression):
         regex = postfix_expression
 
-        keys = list(set(re.sub('[^A-Za-z0-9]+', '', regex) + self.epsilon))
+        keys = list(set([char for char in regex if char.isalnum()] + list(self.epsilon)))
 
         states = []
         stack = []
