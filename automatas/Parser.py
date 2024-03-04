@@ -57,11 +57,17 @@ Parse the set of characters
 Devuelve una lista de caracteres del rango
 """
 def parse_range(char_range):
-    if len(char_range) == 1:
-        return char_range
-    else:
-        start, end = char_range[0], char_range[-1]
-        return [chr(char) for char in range(ord(start), ord(end) + 1)]
+    result = []
+    i = 0
+    while i < len(char_range):
+        if i+2 < len(char_range) and char_range[i+1] == '-':
+            start, end = char_range[i], char_range[i+2]
+            result.extend([chr(c) for c in range(ord(start), ord(end)+1)])
+            i += 3
+        else:
+            result.append(char_range[i])
+            i += 1
+    return ''.join(result)
 
 """
 Parse the set of characters

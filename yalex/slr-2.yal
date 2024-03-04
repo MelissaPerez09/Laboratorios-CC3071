@@ -2,7 +2,7 @@
 
 (* Introducir cualquier header aqui *)
 
-let delim = ["\s\t\n"]
+let delim = ['\s\t\n']
 let ws = delim+
 let letter = ['A'-'Z''a'-'z']
 let digit = ['0'-'9']
