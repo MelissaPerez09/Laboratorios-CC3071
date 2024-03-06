@@ -3,9 +3,10 @@ DirectAFD.py
 Convert the regular expression to an DFA using the direct method
 """
 
-from Parser import *
-from ShuntingYard import *
+from automatas.Parser import *
+from automatas.ShuntingYard import *
 from graphviz import Digraph
+import re
 
 class DirectAFD:
     def __init__(self, value, position=None):
@@ -31,6 +32,19 @@ Construye el árbol de sintaxis directamente desde la expresión regular en nota
 """
 def construct_syntax_tree(postfix):
     stack = []
+    tokens = []
+    i = 0
+    while i < len(postfix):
+        if postfix[i] == '\\':
+            tokens.append(postfix[i:i+2])
+            i += 2
+        else:
+            tokens.append(postfix[i])
+            i += 1
+    for token in tokens:
+        print("Token: ", token)
+        if token not in {'|', '*', '.'}:
+            stack.append(DirectAFD(token))
     position = 0
     for token in postfix:
         if token.isalnum():
@@ -266,8 +280,11 @@ Aplica el método directo para convertir la expresión regular en un DFA con las
 """
 def applyDirect(regex):
     regex = parse_regex(regex)
+    print(f"Processing regex: {regex}")
     postfix = ShuntingYard(regex).shuntingYard()
+    print(f"Postfix: {postfix}")
     aumentada = increaseR(postfix)
+    print(f"Aumentada: {aumentada}")
     syntax_tree = construct_syntax_tree(aumentada)
     label_leaves(syntax_tree)
     

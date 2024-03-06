@@ -138,21 +138,23 @@ Parse the regular expression
 Devuelve la expresión regular analizada
 """
 def parse_regex(regex):
-    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?ε")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?\ε./ ")
     invalid_symbols = [char for char in regex if char not in valid_symbols]
 
     if invalid_symbols:
-        raise ValueError(f">>>Invalid symbol(s) detected: {' '.join(invalid_symbols)}. \nOnly [A-Za-z0-9*+?[],()] are allowed.")
+        raise ValueError(f">>>Invalid symbol(s) detected: {' '.join(invalid_symbols)}. \nOnly [A-Za-z0-9*+?[],()\] are allowed.")
 
     if not check_consecutive_operators(regex):
         raise ValueError(">>>Consecutive operators are not permitted. Use one at a time.")
 
+    """
     is_balanced, unbalanced_parentheses = check_balanced_parentheses(regex)
     if not is_balanced:
         error_messages = []
         for char, i, error_type in unbalanced_parentheses:
             error_messages.append(f">>>Unbalanced parenthesis '{char}': {error_type}.")
         raise ValueError("\n".join(error_messages))
+    """
 
     # parsing
     return parse_optional(parse_repetitive(parse_set(regex)))

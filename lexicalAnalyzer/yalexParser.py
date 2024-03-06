@@ -18,7 +18,7 @@ class YALexParser:
                 if line.startswith('let'):
                     parts = line.split('=')
                     name = parts[0].strip().split()[1]
-                    value = parts[1].strip().replace("'", "").replace(" ", "")
+                    value = parts[1].strip().replace("'", "")
                     self.definitions[name] = value
                 elif line.startswith('rule tokens'):
                     in_rule = True
@@ -44,10 +44,25 @@ class YALexParser:
         regexes = {}
         for token_name, token_pattern in self.token_rules:
             regex = self.replace_definitions(token_pattern)
-            regex = regex.replace('s', '+')
+            regex = regex.replace("'", "").replace('\\', '|\\')
             regexes[token_name] = regex
         return regexes
-
-parser = YALexParser('./yalex/slr-4.yal')
+    
+    # For generating full regex of tokens
+    def combine_regexes(self, regexes):
+        combined_regex_parts = []
+        for regex in regexes.values():
+            if regex in ['+', '*', '(', ')']:
+                regex = "\\" + regex
+            combined_regex_parts.append(regex)
+        complete_regex = '|'.join(combined_regex_parts)
+        return complete_regex
+    
+"""
+# Debbuging class
+parser = YALexParser('./yalex/slr-1.yal')
 parser.parse()
-print(parser.generate_all_regex())
+regexes = parser.generate_all_regex()
+full_regex = parser.combine_regexes(regexes)
+print(f"{regexes} \n{full_regex}")
+"""

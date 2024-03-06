@@ -19,7 +19,7 @@ class ShuntingYard:
         tokens = list(cleaned)
         i = 0
         while i < len(tokens) - 1:
-            if (tokens[i].isalnum() or tokens[i] == ')' or tokens[i] == '*') and (tokens[i+1].isalnum() or tokens[i+1] == '('):
+            if (tokens[i].isalnum() or tokens[i] in ['*', '\t', '\n', '\s']) and (tokens[i+1].isalnum() or tokens[i+1] in ['(', '\t', '\n']):
                 tokens.insert(i+1, '.')
             i += 1
         return tokens
@@ -45,9 +45,16 @@ class ShuntingYard:
         stack = []
         
         # Iterate through tokens
+        escape_next = False
+
         for token in self.tokens:
+            if escape_next:
+                output.append('\\' + token)
+                escape_next = False
+            elif token == '\\':
+                escape_next = True
             # If token is an operand, append to output
-            if token.isalnum():
+            elif token.isalnum() or token in [' ', '\t', '\n', '\s']:
                 output.append(token if token != self.epsilon else "ε")
             # If token is an operator or parenthesis append to stack
             elif token == "(":
