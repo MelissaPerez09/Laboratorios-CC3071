@@ -16,11 +16,29 @@ class ShuntingYard:
     """
     def tokenize(self, input_string):
         cleaned = input_string.replace(" ", "")
-        tokens = list(cleaned)
+        tokens = []
+        i = 0
+        while i < len(cleaned):
+            if cleaned[i] == '\\':
+                if i + 1 < len(cleaned):
+                    tokens.append(cleaned[i] + cleaned[i + 1])
+                    i += 2
+                else:
+                    raise ValueError("Invalid escaped character at the end of input string")
+            elif cleaned[i] in {' ', '\t', '\n'}:
+                # Handle whitespace characters
+                tokens.append(f'\\{cleaned[i]}')
+                i += 1
+            else:
+                tokens.append(cleaned[i])
+                i += 1
+
+        # Add implicit concatenation
         i = 0
         while i < len(tokens) - 1:
-            if (tokens[i].isalnum() or tokens[i] in ['*', '\t', '\n', '\s']) and (tokens[i+1].isalnum() or tokens[i+1] in ['(', '\t', '\n']):
-                tokens.insert(i+1, '.')
+            if (tokens[i].isalnum() or tokens[i] == ')' or tokens[i] == '*') and \
+            (tokens[i + 1].isalnum() or tokens[i + 1] == '('):
+                tokens.insert(i + 1, '.')
             i += 1
         return tokens
 
@@ -45,16 +63,9 @@ class ShuntingYard:
         stack = []
         
         # Iterate through tokens
-        escape_next = False
-
         for token in self.tokens:
-            if escape_next:
-                output.append('\\' + token)
-                escape_next = False
-            elif token == '\\':
-                escape_next = True
             # If token is an operand, append to output
-            elif token.isalnum() or token in [' ', '\t', '\n', '\s']:
+            if token.isalnum():
                 output.append(token if token != self.epsilon else "ε")
             # If token is an operator or parenthesis append to stack
             elif token == "(":
