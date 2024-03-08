@@ -80,7 +80,7 @@ class YALexParser:
             elif inside_single_quotes and char in {'+', '*', '(', ')', '-', '/', '|', '?', '{', '}', '.', '^', '$', '-', '/', ';', ':', '>', '<', '=', '!', '&', ',', '=:'}:
                 escaped_regex += '\\' + char
             else:
-                escaped_regex += char.replace("'", "").replace(" ", "\\_")
+                escaped_regex += char.replace("'", "").replace(" ", "\\w")
 
             i += 1
 

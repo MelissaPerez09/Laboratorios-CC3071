@@ -3,6 +3,18 @@ Parser.py
 Parses the regular expression and checks for errors
 """
 
+def parse_special_characters(regex):
+    i = 0
+    result = ""
+    while i < len(regex):
+        if i + 1 < len(regex) and regex[i] == "\\" and regex[i+1] in "wnts":
+            result += regex[i:i+2]
+            i += 2
+        else:
+            result += regex[i]
+            i += 1
+    return result
+
 """
 Parse the optional operator "?"
 :param regex: Regular expression
@@ -66,14 +78,17 @@ def parse_range(char_range):
     result = []
     i = 0
     while i < len(char_range):
-        if i+2 < len(char_range) and char_range[i+1] == '-':
+        if char_range[i:i+2] in ["\\w", "\\t", "\\n", "\\s"]:
+            result.append(char_range[i:i+2])
+            i += 2
+        elif i+2 < len(char_range) and char_range[i+1] == '-':
             start, end = char_range[i], char_range[i+2]
             result.extend([chr(c) for c in range(ord(start), ord(end)+1)])
             i += 3
         else:
             result.append(char_range[i])
             i += 1
-    return ''.join(result)
+    return result
 
 """
 Parse the set of characters
@@ -85,51 +100,17 @@ def parse_set(regex):
     result = ""
     while i < len(regex):
         if regex[i] == "[":
-            set_end = regex.find("]", i)
-            result += "(" + "|".join(list(parse_range(regex[i+1:set_end]))) + ")"
-            i = set_end + 1
+            j = i
+            while regex[j] != "]":
+                j += 1
+            set_chars = regex[i+1:j]
+            parsed_chars = parse_range(set_chars)
+            result += "(" + "|".join(parsed_chars) + ")"
+            i = j + 1
         else:
             result += regex[i]
             i += 1
     return result
-
-def add_or_to_expression(expression):
-    new_expression = ""
-    i = 0
-    while i < len(expression):
-        if expression[i] == "(":
-            j = i
-            while j < len(expression) and expression[j] != ")":
-                j += 1
-            if j < len(expression):
-                sub_expression = expression[i+1:j]
-                if "\\" in sub_expression:
-                    options = []
-                    k = 0
-                    while k < len(sub_expression):
-                        if sub_expression[k] == "\\":
-                            if sub_expression[k:k+2] in {"\\s", "\\t", "\\n", "\\_"}:
-                                options.append(sub_expression[k:k+2])
-                                k += 1
-                            else:
-                                options.append(sub_expression[k])
-                        else:
-                            options.append(sub_expression[k])
-                        k += 1
-                    if len(options) > 1:
-                        new_expression += "(" + "|".join(options) + ")"
-                    else:
-                        new_expression += "(" + options[0] + ")"
-                else:
-                    new_expression += "(" + sub_expression + ")"
-                i = j + 1
-            else:
-                new_expression += expression[i]
-                i += 1
-        else:
-            new_expression += expression[i]
-            i += 1
-    return new_expression
 
 # Error detection or regex
 """
@@ -199,8 +180,9 @@ def parse_regex(regex):
             error_messages.append(f">>>Unbalanced parenthesis '{char}': {error_type}.")
         raise ValueError("\n".join(error_messages))
     """
-
+    regex = parse_special_characters(regex)  # Agrega esta línea
+    
     # parsing
-    return add_or_to_expression(parse_optional(parse_repetitive(parse_set(regex))))
+    return parse_optional(parse_repetitive(parse_set(regex)))
 
 # programmed by @melissaperez_
