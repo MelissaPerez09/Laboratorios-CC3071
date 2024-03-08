@@ -6,7 +6,6 @@ Convert the regular expression to an DFA using the direct method
 from automatas.Parser import *
 from automatas.ShuntingYard import *
 from graphviz import Digraph
-import re
 
 class DirectAFD:
     def __init__(self, value, position=None):

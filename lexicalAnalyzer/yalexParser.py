@@ -96,11 +96,11 @@ class YALexParser:
         complete_regex = '|'.join(combined_regex_parts)
         return complete_regex
     
-#"""
+"""
 # Debbuging class
 parser = YALexParser('./yalex/slr-1.yal')
 parser.parse()
 regexes = parser.generate_all_regex()
 full_regex = parser.combine_regexes(regexes)
 print(f"{regexes} \n\n{full_regex}")
-#"""
+"""

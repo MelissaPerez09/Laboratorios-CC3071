@@ -50,6 +50,11 @@ class ShuntingYard:
     def getPrecedence(self, operator):
         precedence = {'|': 1, '*': 3, '.': 2}
         return precedence.get(operator, 0)
+    
+    def handleSpecialChars(self, token):
+        if token in ['_', '\\', '\t', '\n', '\s']:
+            return True
+        return False
 
     """
     Shunting Yard algorithm
@@ -58,14 +63,22 @@ class ShuntingYard:
     Recorre la lista de tokens y los va colocando en la pila o en la salida dependiendo de su precedencia
     """
     def shuntingYard(self):
+        expression = list(self.tokens)
+        i = 0
+        while i < len(expression) - 1:
+            if (expression[i].isalnum() or self.handleSpecialChars(expression[i]) or expression[i] == ')') and (expression[i+1].isalnum() or self.handleSpecialChars(expression[i+1]) or expression[i+1] == '('):
+                expression.insert(i+1, '.')
+            i += 1
+        expression = ''.join(expression)
+        
         # Lists to store output and stack
         output = []
         stack = []
         
         # Iterate through tokens
-        for token in self.tokens:
+        for token in expression:
             # If token is an operand, append to output
-            if token.isalnum():
+            if token.isalnum() or self.handleSpecialChars(token):
                 output.append(token if token != self.epsilon else "ε")
             # If token is an operator or parenthesis append to stack
             elif token == "(":
@@ -78,7 +91,7 @@ class ShuntingYard:
                     stack.pop()
             else:
                 # Pop operators from stack with higher precedence to output
-                while stack and self.getPrecedence(stack[-1]) >= self.getPrecedence(token):
+                while stack and stack[-1] != "(" and self.getPrecedence(stack[-1]) >= self.getPrecedence(token):
                     output.append(stack.pop())
                 stack.append(token)
 
