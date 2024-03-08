@@ -1,0 +1,21 @@
+(* YALex con dificultad alta *)
+
+(* Introducir cualquier header aqui *)
+
+let lettersMin = ['a'-'c']
+let lettersMay = ['A'-'C']
+let letters = lettersMin+lettersMay
+let ws = [' ']
+let hi = 'hola'
+let all = 'mun'
+let welcome = hiwsall
+
+
+rule tokens = 
+    welcome     { hello world }
+  | letters     { print letters }
+  | ''          { print ws }
+
+
+
+(* Introducir cualquier trailer aqui *)

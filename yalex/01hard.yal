@@ -1,0 +1,19 @@
+(* YALex con dificultad alta *)
+
+(* Introducir cualquier header aqui *)
+
+let delim = ['\s''\t''\n']
+let ws = delim+
+let letters = ['A'-'C''a'-'c']
+let digit = [04172]
+let regex = digit?(digit|letters)*
+
+rule tokens = 
+     ws       { return ws }
+  | regex     { print("Identificador") }
+  | '\n'      { print new line }
+  | (8*)      { new regex }
+  | (a+b)     { un tab }
+  | digit     { print digit }
+
+(* Introducir cualquier trailer aqui *)

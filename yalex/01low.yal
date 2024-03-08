@@ -1,0 +1,12 @@
+(* YALex con dificultad baja *)
+
+(* Introducir cualquier header aqui *)
+
+let letter = ['A'-'C']
+let regex = letter(letter)*
+
+rule tokens = 
+  | regex     { print regex }
+  | '\n'      { print new line }
+
+(* Introducir cualquier trailer aqui *)

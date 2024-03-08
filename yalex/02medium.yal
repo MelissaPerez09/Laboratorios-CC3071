@@ -1,0 +1,17 @@
+(* YALex con dificultad media *)
+
+(* Introducir cualquier header aqui *)
+
+let delim = [' ''\t''\n']
+let ws = delim*
+let letter = ['A'-'C''a'-'s']
+let vowel = [aeiou]
+let digit = ['0'-'2']
+let id = letter(vowel|digit)*
+
+rule tokens = 
+    ws          { return WHITESPACE }
+  | id          { return ID }
+  | 'a'+        { print try kleene }
+
+(* Introducir cualquier trailer aqui *)
