@@ -37,7 +37,10 @@ def parse_repetitive(regex):
     i = 0
     result = ""
     while i < len(regex):
-        if i + 1 < len(regex) and regex[i + 1] == "+":
+        if regex[i] == "\\":
+            result += regex[i] + regex[i + 1]
+            i += 2
+        elif i + 1 < len(regex) and regex[i + 1] == "+":
             if regex[i] == ")":
                 open_index = regex.rfind("(", 0, i)
                 repeated = parse_repetitive(regex[open_index + 1:i])
@@ -46,6 +49,9 @@ def parse_repetitive(regex):
             else:
                 result += "(" + regex[i] + regex[i] + "*)"
                 i += 2
+        elif i + 1 < len(regex) and regex[i + 1] == "'+'":
+            result += regex[i] + regex[i]
+            i += 2
         else:
             result += regex[i]
             i += 1
@@ -138,7 +144,7 @@ Parse the regular expression
 Devuelve la expresión regular analizada
 """
 def parse_regex(regex):
-    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?\ε./ ")
+    valid_symbols = set("[]-|()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*+?\ε./ _")
     invalid_symbols = [char for char in regex if char not in valid_symbols]
 
     if invalid_symbols:
