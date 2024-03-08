@@ -41,7 +41,7 @@ def construct_syntax_tree(postfix):
             tokens.append(postfix[i])
             i += 1
     for token in tokens:
-        print("Token: ", token)
+        #print("Token: ", token)
         if token not in {'|', '*', '.'}:
             stack.append(DirectAFD(token))
     position = 0
@@ -228,7 +228,7 @@ def construct_dfa_states_and_transitions(syntax_tree, follow_pos):
             if next_state and next_state_frozen not in states:
                 states.add(next_state_frozen)
                 queue.append(next_state_frozen)
-            if next_state:  # This ensures transitions to empty sets are not created
+            if next_state:
                 dfa_transitions[(current_state, char)] = next_state_frozen
 
     return states, dfa_transitions
@@ -267,9 +267,13 @@ def draw_dfa(dfa_transitions, start_state, accept_states):
         graph.node(letter, label=letter, shape=shape)
 
     for (from_state, input_char), to_state in dfa_transitions.items():
+        label = input_char
         from_state_str = state_to_number[from_state]
         to_state_str = state_to_number[to_state]
-        graph.edge(from_state_str, to_state_str, label=input_char)
+
+        print(f"From state {from_state_str} to {to_state_str} with {label}")
+
+        graph.edge(from_state_str, to_state_str, label=label)
     graph.render('dfa_graph')
 
 """
@@ -279,11 +283,12 @@ Aplica el método directo para convertir la expresión regular en un DFA con las
 """
 def applyDirect(regex):
     regex = parse_regex(regex)
+    print("\n------------------------------")
     print(f"Processing regex: {regex}")
     postfix = ShuntingYard(regex).shuntingYard()
     print(f"Postfix: {postfix}")
     aumentada = increaseR(postfix)
-    print(f"Aumentada: {aumentada}")
+    print(f"Aumentada: {aumentada}\n")
     syntax_tree = construct_syntax_tree(aumentada)
     label_leaves(syntax_tree)
     

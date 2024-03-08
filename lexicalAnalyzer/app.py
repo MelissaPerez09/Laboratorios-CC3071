@@ -68,28 +68,27 @@ class LexicalAnalyzerApp:
             for (state_frozenset, symbol), next_state_frozenset in dfa_transitions.items():
                 state_str = str(state_frozenset)
                 next_state_str = str(next_state_frozenset)
-                
+
                 if state_str not in converted_transitions:
                     converted_transitions[state_str] = {}
-                
+
                 if symbol not in converted_transitions[state_str]:
                     converted_transitions[state_str][symbol] = set()
-                
+
                 converted_transitions[state_str][symbol].add(next_state_str)
-            
+
             return converted_transitions
 
         for token, regex in tokens.items():
             dfa_transitions, start_state, accept_states = applyDirect(regex)
             draw_dfa(dfa_transitions, start_state, accept_states)
-            print(f"Generated dfa_graph_{token}.png")
             os.rename('dfa_graph.png', f'dfa_graph_{token}.png')
-            
-            converted_transitions = convert_transitions(dfa_transitions)
-            dfa_union.add_dfa(converted_transitions, start_state, accept_states)
 
-        afnd_transitions, afnd_start_state, afnd_accept_states = dfa_union.union()
-        draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states)
+            converted_transitions = convert_transitions(dfa_transitions)
+            dfa_union.add_dfa(converted_transitions, start_state, accept_states, token)
+
+        afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
+        draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
         print("Generated afnd_graph.png")
 
         result_text = "\n".join([f"{token}: {regex}" for token, regex in tokens.items()])
