@@ -9,9 +9,20 @@ class DFAUnion:
     def __init__(self):
         self.dfas = []
 
+    """
+    Agrega un DFA a la unión
+    :param dfa_transitions: Transiciones del DFA
+    :param start_state: Estado inicial
+    :param accept_states: Estados de aceptación
+    :param token_action: Acción del token
+    """
     def add_dfa(self, dfa_transitions, start_state, accept_states, token_action):
         self.dfas.append((dfa_transitions, start_state, accept_states, token_action))
 
+    """
+    Une los DFAs en un AFND
+    returns las transiciones, estado inicial, estados de aceptación y acciones de token del AFND
+    """
     def union(self):
         afnd_transitions = {}
         afnd_start_state = 'start'
@@ -38,7 +49,12 @@ class DFAUnion:
 
         return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions
 
-    
+"""
+Dibuja un DFA
+:param transitions: Transiciones del DFA
+:param start_state: Estado inicial
+:param accept_states: Estados de aceptación
+"""    
 def draw_afnd(transitions, start_state, accept_states, token_actions):
     graph = Digraph(format='png')
 
@@ -65,4 +81,6 @@ def draw_afnd(transitions, start_state, accept_states, token_actions):
         graph.node(str(accept_state), f'{str(accept_state)}\n{token_action}', shape='doublecircle')
 
 
-    graph.render('afnd', view=False)
+    graph.render('afnd', view=True)
+
+# programmed by @melissaperez_

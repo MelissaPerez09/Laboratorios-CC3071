@@ -9,6 +9,12 @@ class YALexParser:
         self.token_rules = []
         self.definitions = {}
 
+    """
+    parses the YALex file and stores the token rules and definitions
+    :param file_path: Path to the YALex file
+    returns the token rules and definitions
+    """
+    
     def parse(self):
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
@@ -32,6 +38,11 @@ class YALexParser:
                 elif line == '':
                     in_rule = False
 
+    """
+    replaces the definitions in the pattern
+    :param pattern: Pattern
+    returns the pattern with the definitions replaced
+    """
     def replace_definitions(self, pattern):
         prev_pattern = None
         while prev_pattern != pattern:
@@ -40,6 +51,9 @@ class YALexParser:
                 pattern = pattern.replace(def_name, def_value)
         return pattern
 
+    """
+    generates the regex for all the tokens
+    """
     def generate_all_regex(self):
         regexes = {}
         for token_action, token_pattern in self.token_rules:
@@ -48,8 +62,13 @@ class YALexParser:
             regexes[token_action] = regex
         return regexes
 
+    """
+    escapes special characters in the regex
+    :param regex: Regex
+    returns the regex with the special characters escaped
+    """
     def escape_special_chars(self, regex):
-        special_chars_outside_classes = {'+', '*', '|', '?', '{', '}', '.', '^', '$', '-', '/', '\\'}
+        special_chars_outside_classes = {'+', '*', '?', '{', '}', '.', '^', '$', '-', '/', '\\'}
         operator_chars = {'(', ')'}
 
         escaped_regex = ""
@@ -77,7 +96,7 @@ class YALexParser:
                     escaped_regex += char
             elif char in operator_chars and (i == 0 or (regex[i - 1] not in {'\\', '&', '(', '!', ':', ',', ')', '-'})) and not inside_char_class and not inside_square_brackets:
                 escaped_regex += '\\' + char
-            elif inside_single_quotes and char in {'+', '*', '(', ')', '-', '/', '|', '?', '{', '}', '.', '^', '$', '-', '/', ';', ':', '>', '<', '=', '!', '&', ',', '=:'}:
+            elif inside_single_quotes and char in {'+', '*', '(', ')', '-', '/', '?', '{', '}', '.', '^', '$', '-', '/', ';', ':', '>', '<', '=', '!', '&', ',', '=:'}:
                 escaped_regex += '\\' + char
             else:
                 escaped_regex += char.replace("'", "").replace(" ", "\\w")
@@ -86,6 +105,11 @@ class YALexParser:
 
         return escaped_regex
     
+    """
+    For generating full regex of tokens
+    :param regexes: Regexes
+    returns the complete regex
+    """
     # For generating full regex of tokens
     def combine_regexes(self, regexes):
         combined_regex_parts = []
@@ -104,3 +128,5 @@ regexes = parser.generate_all_regex()
 full_regex = parser.combine_regexes(regexes)
 print(f"{regexes} \n\n{full_regex}")
 """
+
+# programmed by @melissaperez_

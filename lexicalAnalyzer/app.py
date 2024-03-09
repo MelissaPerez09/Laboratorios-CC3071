@@ -16,6 +16,10 @@ from lexicalAnalyzer.yalexParser import YALexParser
 from lexicalAnalyzer.finalAutomata import *
 
 class LexicalAnalyzerApp:
+    """
+    Constructor
+    :param root: Root
+    """
     def __init__(self, root):
         self.root = root
         self.root.title("Lexical Analyzer App")
@@ -23,18 +27,21 @@ class LexicalAnalyzerApp:
         self.open_button = ttk.Button(root, text="Open file", command=self.open_file)
         self.open_button.pack()
         
-        self.text_area = ScrolledText(root, wrap=tk.WORD, width=40, height=10)
+        self.text_area = ScrolledText(root, wrap=tk.WORD, width=125, height=25)
         self.text_area.pack(expand=True, fill=tk.BOTH)
 
         self.analysis_button = ttk.Button(root, text="Analyze", command=self.analyze_and_draw)
         self.analysis_button.pack()
 
-        self.output_terminal = ScrolledText(root, wrap=tk.WORD, width=40, height=10)
+        self.output_terminal = ScrolledText(root, wrap=tk.WORD, width=125, height=25)
         self.output_terminal.pack(expand=True, fill=tk.BOTH)
         
         self.save_button = ttk.Button(root, text="Save file", command=self.save_file)
         self.save_button.pack()
 
+    """
+    Open file
+    """
     def open_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("YALex Files", "*.yal")])
         if file_path:
@@ -42,7 +49,12 @@ class LexicalAnalyzerApp:
                 content = file.read()
                 self.text_area.delete('1.0', tk.END)
                 self.text_area.insert(tk.END, content)
-
+        file_name = os.path.basename(file_path)
+        self.output_terminal.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
+    
+    """
+    Save file
+    """
     def save_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".yalex", filetypes=[("YALex Files", "*.yal")])
         if file_path:
@@ -50,19 +62,28 @@ class LexicalAnalyzerApp:
                 content = self.text_area.get('1.0', tk.END)
                 file.write(content)
 
+    """
+    Analyze and draw
+    reads the content of the text area, parses the YALex file, generates the regex for all the tokens,
+    returns the regex for all the tokens and draws the DFA and AFND
+    """
     def analyze_and_draw(self):
+        self.output_terminal.insert(tk.END, "\n>-----------------------------------\nReading and analyzing the file...\n------------------------------------\n")
         content = self.text_area.get('1.0', tk.END)
         with open('temp.yal', 'w') as temp_file:
-            print("File opened successfully.")
             temp_file.write(content)
 
-        print("Reading and analyzing the file...")
         parser = YALexParser('temp.yal')
         parser.parse()
         tokens = parser.generate_all_regex()
 
         dfa_union = DFAUnion()
 
+        """
+        Convert transitions
+        :param dfa_transitions: DFA transitions
+        returns the converted transitions
+        """
         def convert_transitions(dfa_transitions):
             converted_transitions = {}
             for (state_frozenset, symbol), next_state_frozenset in dfa_transitions.items():
@@ -89,11 +110,12 @@ class LexicalAnalyzerApp:
 
         afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
         draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
-        print("Generated afnd_graph.png")
+        generated = "\nGenerated afnd.png\n"
+        self.output_terminal.insert(tk.END, generated)
 
-        result_text = "\n".join([f"{token}: {regex}" for token, regex in tokens.items()])
-        self.output_terminal.delete('1.0', tk.END)
-        self.output_terminal.insert(tk.END, result_text)
+        result_text = "\n".join([f"token_action: {token} -> regex: {regex}" for token, regex in tokens.items()])
+        self.output_terminal.insert(tk.END, f"\n>-----------------------------------\nAnalyzed tokens:\n{result_text}\n------------------------------------\n-----------------------------------<\n")
 
         os.remove('temp.yal')
-        print("File closed and removed successfully.")
+
+# programmed by @melissaperez_
