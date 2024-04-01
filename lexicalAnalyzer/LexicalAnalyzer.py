@@ -25,11 +25,11 @@ def parse_optional(regex):
                open_bracket_index = result.rfind('(')
                if open_bracket_index != -1:
                    result = result[:open_bracket_index] + '((' + result[open_bracket_index+1:] + ')|ε)'
-       elif regex[i] in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':
-           if result:
-               result = result[:-1] + result[-1] + '(' + regex[i] + '|ε)'
-           else:
-               result += '(' + regex[i] + '|ε)'
+           elif regex[i] in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':
+               if result:
+                   result = result[:-1] + result[-1] + '(' + regex[i] + '|ε)'
+               else:
+                   result += '(' + regex[i] + '|ε)'
            i += 2
        else:
            result += regex[i]
@@ -381,7 +381,7 @@ def draw_afnd(transitions, start_state, accept_states, token_actions):
    for state in transitions.keys():
        if state in accept_states:
            token_action = token_actions.get(state, '')
-           graph.node(str(state), f'{str(state)}{token_action}', shape='doublecircle')
+           graph.node(str(state), f'{token_action}', shape='doublecircle')
        else:
            graph.node(str(state), str(state))
        for symbol, next_states in transitions[state].items():
@@ -393,7 +393,7 @@ def draw_afnd(transitions, start_state, accept_states, token_actions):
    for accept_state in accept_states:
        token_action = token_actions.get(accept_state, '')
        token_action = truncate_label(token_action)
-       graph.node(str(accept_state), f'{str(accept_state)}{token_action}', shape='doublecircle')
+       graph.node(str(accept_state), f'{token_action}', shape='doublecircle')
        graph.render('afnd', view=True)
 #Analyzing with automatas
 dfa_union = DFAUnion()
