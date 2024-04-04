@@ -431,7 +431,9 @@ def cerradura_epsilon(estados, afnd_transitions):
    return cerradura
 def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada):
    estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+   tokens = []
    for caracter in cadena_entrada:
+       print(f'Procesando caracter: {caracter}')
        proximos_estados = set()
        for estado in estados_actuales:
            estado_str = str(estado)
@@ -439,13 +441,14 @@ def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, toke
                proximos_estados.update(afnd_transitions[estado_str][caracter])
        estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
    for estado in estados_actuales:
-       estado_str = str(estado)
-       if estado_str in afnd_accept_states:
-           return token_actions[estado_str]
-   return None
+       estado_set = eval(estado) if isinstance(estado, str) else estado
+       print(f'Buscando estado {estado_set} en token_actions: {token_actions}')
+       if estado_set in token_actions:
+           tokens.append(token_actions[estado_set])
+   return tokens
 cadena_entrada = 'A'
-accion_token = analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada)
-if accion_token:
-   print(f'La acción del token es: {accion_token}')
+tokens = analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada)
+if tokens:
+   print(f'La acción del token es: {tokens}')
 else:
    print('No se encontró un token válido para la cadena de entrada.')
