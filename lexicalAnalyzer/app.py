@@ -14,6 +14,7 @@ import os
 from automatas.DirectAFD import *
 from lexicalAnalyzer.yalexParser import YALexParser
 from lexicalAnalyzer.finalAutomata import *
+from lexicalAnalyzer.lexer import *
 
 class LexicalAnalyzerApp:
     """
@@ -26,6 +27,8 @@ class LexicalAnalyzerApp:
         
         self.menu_bar = Menu(self.root)
         self.root.config(menu=self.menu_bar)
+        
+        self.yalex_file_path = None
 
         self.lexical_analyzer_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Lexical Analyzer", menu=self.lexical_analyzer_menu)
@@ -37,7 +40,7 @@ class LexicalAnalyzerApp:
     def init_ui_elements(self):
         # Botones y áreas de texto para el generador LA
         self.open_button_generator = ttk.Button(self.root, text="Open YALex file", command=self.open_YALexfile)
-        self.generate_src_button = ttk.Button(self.root, text="Generate Source Code", command=self.analyze_and_draw)
+        self.generate_src_button = ttk.Button(self.root, text="Generate Source Code", command=self.generate_source_code_from_YALex)
         self.text_area_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
         self.output_terminal_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
 
@@ -90,14 +93,14 @@ class LexicalAnalyzerApp:
     Open file
     """
     def open_YALexfile(self):
-        file_path = filedialog.askopenfilename(filetypes=[("YALex Files", "*.yal")])
-        if file_path:
-            with open(file_path, 'r') as file:
+        self.yalex_file_path = filedialog.askopenfilename(filetypes=[("YALex Files", "*.yal")])
+        if self.yalex_file_path:
+            with open(self.yalex_file_path, 'r') as file:
                 content = file.read()
                 self.text_area_generator.delete('1.0', tk.END)
                 self.text_area_generator.insert(tk.END, content)
-        file_name = os.path.basename(file_path)
-        self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
+            file_name = os.path.basename(self.yalex_file_path)
+            self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
         
     def open_TXTfile(self):
         file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
@@ -118,6 +121,22 @@ class LexicalAnalyzerApp:
             with open(file_path, 'w') as file:
                 content = self.text_area_analyzer.get('1.0', tk.END)
                 file.write(content)
+
+    def generate_source_code_from_YALex(self):
+        if self.yalex_file_path:
+            output_path = './lexicalAnalyzer/LexicalAnalyzer.py'
+            try:
+                generate_source_code(self.yalex_file_path, output_path)
+
+                self.output_terminal_generator.insert(tk.END, "\n>-----------------------------------\n")
+                self.output_terminal_generator.insert(tk.END, "Source code generated successfully at:\n")
+                self.output_terminal_generator.insert(tk.END, output_path)
+                self.output_terminal_generator.insert(tk.END, "\n------------------------------------\n")
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred: {e}")
+                self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\nAn error occurred: {e}\n------------------------------------\n")
+        else:
+            messagebox.showinfo("Info", "Please open a YALex file first.")
 
     """
     Analyze and draw
