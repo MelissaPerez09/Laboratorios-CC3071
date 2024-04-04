@@ -394,7 +394,7 @@ def draw_afnd(transitions, start_state, accept_states, token_actions):
        token_action = token_actions.get(accept_state, '')
        token_action = truncate_label(token_action)
        graph.node(str(accept_state), f'{token_action}', shape='doublecircle')
-       graph.render('afnd', view=True)
+       graph.render('afnd', view=False)
 #Analyzing with automatas
 dfa_union = DFAUnion()
 def convert_transitions(dfa_transitions):
@@ -417,3 +417,35 @@ for token, regex in tokens.items():
 afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
 draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
 
+#Analyzing chars
+def cerradura_epsilon(estados, afnd_transitions):
+   cerradura = set(estados)
+   pila = list(estados)
+   while pila:
+       estado = pila.pop()
+       if estado in afnd_transitions and None in afnd_transitions[estado]:
+           for prox_estado in afnd_transitions[estado][None]:
+               if prox_estado not in cerradura:
+                   cerradura.add(prox_estado)
+                   pila.append(prox_estado)
+   return cerradura
+def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada):
+   estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+   for caracter in cadena_entrada:
+       proximos_estados = set()
+       for estado in estados_actuales:
+           estado_str = str(estado)
+           if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
+               proximos_estados.update(afnd_transitions[estado_str][caracter])
+       estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
+   for estado in estados_actuales:
+       estado_str = str(estado)
+       if estado_str in afnd_accept_states:
+           return token_actions[estado_str]
+   return None
+cadena_entrada = 'A'
+accion_token = analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada)
+if accion_token:
+   print(f'La acción del token es: {accion_token}')
+else:
+   print('No se encontró un token válido para la cadena de entrada.')

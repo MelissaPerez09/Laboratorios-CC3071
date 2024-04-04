@@ -7,7 +7,6 @@ import sys
 sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
 from lexicalAnalyzer.yalexParser import YALexParser
-from lexicalAnalyzer.fixedCode import *
 
 parser = YALexParser('./yalex/01low.yal')
 parser.parse()
@@ -410,7 +409,7 @@ with open('./lexicalAnalyzer/LexicalAnalyzer.py', 'w') as f:
     f.write("       token_action = token_actions.get(accept_state, '')\n")
     f.write("       token_action = truncate_label(token_action)\n")
     f.write("       graph.node(str(accept_state), f'{token_action}', shape='doublecircle')\n")
-    f.write("       graph.render('afnd', view=True)\n")
+    f.write("       graph.render('afnd', view=False)\n")
     
     f.write("#Analyzing with automatas\n")
     f.write("dfa_union = DFAUnion()\n")
@@ -433,5 +432,39 @@ with open('./lexicalAnalyzer/LexicalAnalyzer.py', 'w') as f:
     f.write("    dfa_union.add_dfa(converted_transitions, start_state, accept_states, token)\n")
     f.write("afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()\n")
     f.write("draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)\n\n")
+    
+    f.write("#Analyzing chars\n")
+    f.write("def cerradura_epsilon(estados, afnd_transitions):\n")
+    f.write("   cerradura = set(estados)\n")
+    f.write("   pila = list(estados)\n")
+    f.write("   while pila:\n")
+    f.write("       estado = pila.pop()\n")
+    f.write("       if estado in afnd_transitions and None in afnd_transitions[estado]:\n")
+    f.write("           for prox_estado in afnd_transitions[estado][None]:\n")
+    f.write("               if prox_estado not in cerradura:\n")
+    f.write("                   cerradura.add(prox_estado)\n")
+    f.write("                   pila.append(prox_estado)\n")
+    f.write("   return cerradura\n")
+    f.write("def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada):\n")
+    f.write("   estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)\n")
+    f.write("   for caracter in cadena_entrada:\n")
+    f.write("       proximos_estados = set()\n")
+    f.write("       for estado in estados_actuales:\n")
+    f.write("           estado_str = str(estado)\n")
+    f.write("           if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:\n")
+    f.write("               proximos_estados.update(afnd_transitions[estado_str][caracter])\n")
+    f.write("       estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)\n")
+    f.write("   for estado in estados_actuales:\n")
+    f.write("       estado_str = str(estado)\n")
+    f.write("       if estado_str in afnd_accept_states:\n")
+    f.write("           return token_actions[estado_str]\n")
+    f.write("   return None\n")
+    f.write("cadena_entrada = 'A'\n")
+    f.write("accion_token = analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada)\n")
+    f.write("if accion_token:\n")
+    f.write("   print(f'La acción del token es: {accion_token}')\n")
+    f.write("else:\n")
+    f.write("   print('No se encontró un token válido para la cadena de entrada.')\n")
+
     
 print(">>> LexicalAnalyzer.py created successfully!")
