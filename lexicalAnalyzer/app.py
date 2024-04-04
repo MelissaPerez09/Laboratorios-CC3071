@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Menu
 from tkinter.scrolledtext import ScrolledText
 from tkinter import ttk
 import os
@@ -23,43 +23,100 @@ class LexicalAnalyzerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Lexical Analyzer App")
-
-        self.open_button = ttk.Button(root, text="Open file", command=self.open_file)
-        self.open_button.pack()
         
-        self.text_area = ScrolledText(root, wrap=tk.WORD, width=125, height=25)
-        self.text_area.pack(expand=True, fill=tk.BOTH)
+        self.menu_bar = Menu(self.root)
+        self.root.config(menu=self.menu_bar)
 
-        self.analysis_button = ttk.Button(root, text="Analyze", command=self.analyze_and_draw)
-        self.analysis_button.pack()
+        self.lexical_analyzer_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Lexical Analyzer", menu=self.lexical_analyzer_menu)
+        self.lexical_analyzer_menu.add_command(label="LA Generator", command=self.show_generator_ui)
+        self.lexical_analyzer_menu.add_command(label="Analyzer", command=self.show_analyzer_ui)
 
-        self.output_terminal = ScrolledText(root, wrap=tk.WORD, width=125, height=25)
-        self.output_terminal.pack(expand=True, fill=tk.BOTH)
+        self.init_ui_elements()
+    
+    def init_ui_elements(self):
+        # Botones y áreas de texto para el generador LA
+        self.open_button_generator = ttk.Button(self.root, text="Open YALex file", command=self.open_YALexfile)
+        self.generate_src_button = ttk.Button(self.root, text="Generate Source Code", command=self.analyze_and_draw)
+        self.text_area_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
+        self.output_terminal_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
+
+        # Botones y áreas de texto para el analizador
+        self.open_button_analyzer = ttk.Button(self.root, text="Open chars file", command=self.open_TXTfile)
+        self.analyze_button = ttk.Button(self.root, text="Analyze", command=self.analyze_and_draw)
+        self.text_area_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
+        self.output_terminal_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
+
+        self.save_button = ttk.Button(self.root, text="Save file", command=self.save_file)
+    
+    def show_generator_ui(self):
+        # Ocultar elementos de UI del analizador
+        self.hide_analyzer_ui()
+
+        # Mostrar elementos de UI del generador LA
+        self.open_button_generator.pack()
+        self.generate_src_button.pack()
+        self.text_area_generator.pack(expand=True, fill=tk.BOTH)
+        self.output_terminal_generator.pack(expand=True, fill=tk.BOTH) 
+
+    def hide_generator_ui(self):
+        # Ocultar elementos de UI del generador LA
+        self.open_button_generator.pack_forget()
+        self.generate_src_button.pack_forget()
+        self.text_area_generator.pack_forget()
+        self.output_terminal_generator.pack_forget() 
         
-        self.save_button = ttk.Button(root, text="Save file", command=self.save_file)
+
+    def show_analyzer_ui(self):
+        # Ocultar elementos de UI del generador LA
+        self.hide_generator_ui()
+
+        # Mostrar elementos de UI del analizador
+        self.open_button_analyzer.pack()
+        self.text_area_analyzer.pack(expand=True, fill=tk.BOTH)
+        self.analyze_button.pack()
+        self.output_terminal_analyzer.pack(expand=True, fill=tk.BOTH)
         self.save_button.pack()
+
+    def hide_analyzer_ui(self):
+        # Ocultar elementos de UI del analizador
+        self.open_button_analyzer.pack_forget()
+        self.text_area_analyzer.pack_forget()
+        self.analyze_button.pack_forget()
+        self.output_terminal_analyzer.pack_forget()
+        self.save_button.pack_forget()
 
     """
     Open file
     """
-    def open_file(self):
+    def open_YALexfile(self):
         file_path = filedialog.askopenfilename(filetypes=[("YALex Files", "*.yal")])
         if file_path:
             with open(file_path, 'r') as file:
                 content = file.read()
-                self.text_area.delete('1.0', tk.END)
-                self.text_area.insert(tk.END, content)
+                self.text_area_generator.delete('1.0', tk.END)
+                self.text_area_generator.insert(tk.END, content)
         file_name = os.path.basename(file_path)
-        self.output_terminal.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
+        self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
+        
+    def open_TXTfile(self):
+        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+        if file_path:
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.text_area_analyzer.delete('1.0', tk.END)
+                self.text_area_analyzer.insert(tk.END, content)
+        file_name = os.path.basename(file_path)
+        self.output_terminal_analyzer.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
     
     """
     Save file
     """
     def save_file(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".yalex", filetypes=[("YALex Files", "*.yal")])
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
         if file_path:
             with open(file_path, 'w') as file:
-                content = self.text_area.get('1.0', tk.END)
+                content = self.text_area_analyzer.get('1.0', tk.END)
                 file.write(content)
 
     """
@@ -68,8 +125,8 @@ class LexicalAnalyzerApp:
     returns the regex for all the tokens and draws the DFA and AFND
     """
     def analyze_and_draw(self):
-        self.output_terminal.insert(tk.END, "\n>-----------------------------------\nReading and analyzing the file...\n------------------------------------\n")
-        content = self.text_area.get('1.0', tk.END)
+        self.output_terminal_generator.insert(tk.END, "\n>-----------------------------------\nReading and analyzing the file...\n------------------------------------\n")
+        content = self.text_area_generator.get('1.0', tk.END)
         with open('temp.yal', 'w') as temp_file:
             temp_file.write(content)
 
@@ -111,10 +168,10 @@ class LexicalAnalyzerApp:
         afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
         draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
         generated = "\nGenerated afnd.png\n"
-        self.output_terminal.insert(tk.END, generated)
+        self.output_terminal_generator.insert(tk.END, generated)
 
         result_text = "\n".join([f"token_action: {token} -> regex: {regex}" for token, regex in tokens.items()])
-        self.output_terminal.insert(tk.END, f"\n>-----------------------------------\nAnalyzed tokens:\n{result_text}\n------------------------------------\n-----------------------------------<\n")
+        self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\nAnalyzed tokens:\n{result_text}\n------------------------------------\n-----------------------------------<\n")
 
         os.remove('temp.yal')
 
