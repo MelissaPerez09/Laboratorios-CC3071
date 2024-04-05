@@ -2,7 +2,7 @@
 from graphviz import Digraph
 import os
 
-tokens = {'print ("regex")': '[a-z]([a-z])*', 'print ("\\n")': '\\\\n'}
+tokens = {'print ("regex")': '[a-z]([a-z])*', 'print ("\\n")': '\\\\n', 'print ("Simbolo de suma" )': '\\\\+'}
 
 #Parser regex of tokens
 def parse_special_characters(regex):
@@ -435,29 +435,34 @@ def cerradura_epsilon(estados, afnd_transitions):
 def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
     with open(texto_entrada, 'r') as file:
         lineas = file.readlines()
+
     tokens = []
-    for linea in lineas:
-        linea = linea.strip()
-        estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
-        for caracter in linea:
-            #print(f'Procesando caracter: {caracter}')
-            proximos_estados = set()
+    lineas_tokens = []
+
+    for i, linea in enumerate(lineas):
+        linea = linea.strip().split()
+        for token in linea:
+            estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+            for caracter in token:
+                proximos_estados = set()
+                for estado in estados_actuales:
+                    estado_str = str(estado)
+                    if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
+                        proximos_estados.update(afnd_transitions[estado_str][caracter])
+                estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
             for estado in estados_actuales:
-                estado_str = str(estado)
-                if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
-                    proximos_estados.update(afnd_transitions[estado_str][caracter])
-            estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
-        for estado in estados_actuales:
-            estado_set = eval(estado) if isinstance(estado, str) else estado
-            if estado_set in token_actions:
-                tokens.append(token_actions[estado_set])
-    
+                estado_set = eval(estado) if isinstance(estado, str) else estado
+                if estado_set in token_actions:
+                    tokens.append(token_actions[estado_set])
+                    lineas_tokens.append(i)
+
     acciones_ejecutadas = 0
-    for token in tokens:
-        print(f"\nExecuted action for '{linea}':")
+    for i, token in enumerate(tokens):
+        token_linea = lineas[lineas_tokens[i]].strip().split()[acciones_ejecutadas % len(lineas[lineas_tokens[i]].strip().split())]
+        print(f"\nEjecutando acción para '{token_linea}':")
         exec(token)
         acciones_ejecutadas += 1
-    
+
     return tokens
 
 texto_entrada = "./chars/01low.txt"
