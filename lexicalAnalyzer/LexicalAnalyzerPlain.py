@@ -2,7 +2,7 @@
 from graphviz import Digraph
 import os
 
-tokens = {'print ("regex")': '[a-z]([a-z])*', 'print ("\\n")': '\\\\n', 'print ("Simbolo de suma" )': '\\\\+'}
+tokens = {'': '[\\w\\t\\n]+', 'print("Identificador")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print("Número")': '\\-?[0-9]+', 'print("Operador de suma")': '\\+', 'print("Operador de multiplicación")': '\\*', 'print("Operador de asignación")': '\\='}
 
 #Parser regex of tokens
 def parse_special_characters(regex):
@@ -432,6 +432,8 @@ def cerradura_epsilon(estados, afnd_transitions):
                     pila.append(prox_estado)
     return cerradura
 
+special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")'}
+
 def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
     with open(texto_entrada, 'r') as file:
         lineas = file.readlines()
@@ -442,19 +444,24 @@ def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, tok
     for i, linea in enumerate(lineas):
         linea = linea.strip().split()
         for token in linea:
-            estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
-            for caracter in token:
-                proximos_estados = set()
+            if token in special_tokens:
+                exec(special_tokens[token])
+                tokens.append(special_tokens[token])
+                lineas_tokens.append(i)
+            else:
+                estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+                for caracter in token:
+                    proximos_estados = set()
+                    for estado in estados_actuales:
+                        estado_str = str(estado)
+                        if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
+                            proximos_estados.update(afnd_transitions[estado_str][caracter])
+                    estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
                 for estado in estados_actuales:
-                    estado_str = str(estado)
-                    if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
-                        proximos_estados.update(afnd_transitions[estado_str][caracter])
-                estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
-            for estado in estados_actuales:
-                estado_set = eval(estado) if isinstance(estado, str) else estado
-                if estado_set in token_actions:
-                    tokens.append(token_actions[estado_set])
-                    lineas_tokens.append(i)
+                    estado_set = eval(estado) if isinstance(estado, str) else estado
+                    if estado_set in token_actions:
+                        tokens.append(token_actions[estado_set])
+                        lineas_tokens.append(i)
 
     acciones_ejecutadas = 0
     for i, token in enumerate(tokens):
