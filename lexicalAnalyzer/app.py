@@ -15,6 +15,7 @@ from automatas.DirectAFD import *
 from lexicalAnalyzer.yalexParser import YALexParser
 from lexicalAnalyzer.finalAutomata import *
 from lexicalAnalyzer.lexer import *
+from lexicalAnalyzer.LexicalAnalyzer import *
 
 class LexicalAnalyzerApp:
     """
@@ -29,6 +30,7 @@ class LexicalAnalyzerApp:
         self.root.config(menu=self.menu_bar)
         
         self.yalex_file_path = None
+        self.txt_file_path = None
 
         self.lexical_analyzer_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Lexical Analyzer", menu=self.lexical_analyzer_menu)
@@ -46,7 +48,7 @@ class LexicalAnalyzerApp:
 
         # Botones y áreas de texto para el analizador
         self.open_button_analyzer = ttk.Button(self.root, text="Open chars file", command=self.open_TXTfile)
-        self.analyze_button = ttk.Button(self.root, text="Analyze", command=self.analyze_and_draw)
+        self.analyze_button = ttk.Button(self.root, text="Analyze", command=self.analyze)
         self.text_area_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
         self.output_terminal_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
 
@@ -103,14 +105,14 @@ class LexicalAnalyzerApp:
             self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
         
     def open_TXTfile(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
-        if file_path:
-            with open(file_path, 'r') as file:
+        self.txt_file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+        if self.txt_file_path:
+            with open(self.txt_file_path, 'r') as file:
                 content = file.read()
                 self.text_area_analyzer.delete('1.0', tk.END)
                 self.text_area_analyzer.insert(tk.END, content)
-        file_name = os.path.basename(file_path)
-        self.output_terminal_analyzer.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
+            file_name = os.path.basename(self.txt_file_path)
+            self.output_terminal_analyzer.insert(tk.END, f"\n>-----------------------------------\n{file_name} opened correctly\n------------------------------------\n")
     
     """
     Save file
@@ -122,6 +124,9 @@ class LexicalAnalyzerApp:
                 content = self.text_area_analyzer.get('1.0', tk.END)
                 file.write(content)
 
+    """
+    Generate Source Code
+    """
     def generate_source_code_from_YALex(self):
         if self.yalex_file_path:
             output_path = './lexicalAnalyzer/LexicalAnalyzer.py'
@@ -137,6 +142,30 @@ class LexicalAnalyzerApp:
                 self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\nAn error occurred: {e}\n------------------------------------\n")
         else:
             messagebox.showinfo("Info", "Please open a YALex file first.")
+    
+    """
+    Use Lexical Analyzer
+    """
+    def analyze(self):
+        if self.txt_file_path:
+            try:
+                with open(self.txt_file_path, 'r') as file:
+                    texto_entrada = file.read().strip()
+                tokens = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
+                
+                if tokens:
+                    result = f'Tokens: {tokens}'
+                else:
+                    result = 'No se encontró un token válido para la cadena de entrada.'
+                self.output_terminal_analyzer.insert(tk.END, "\n>-----------------------------------\n")
+                self.output_terminal_analyzer.insert(tk.END, result)
+                self.output_terminal_analyzer.insert(tk.END, "\n------------------------------------\n")
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred: {e}")
+                self.output_terminal_analyzer.insert(tk.END, f"\n>-----------------------------------\nAn error occurred: {e}\n------------------------------------\n")
+        else:
+            messagebox.showinfo("Info", "Please open a text file to analyze.")
+
 
     """
     Analyze and draw

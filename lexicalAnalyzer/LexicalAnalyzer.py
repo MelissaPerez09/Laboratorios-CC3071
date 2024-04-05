@@ -429,10 +429,10 @@ def cerradura_epsilon(estados, afnd_transitions):
                    cerradura.add(prox_estado)
                    pila.append(prox_estado)
    return cerradura
-def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada):
+def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
    estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
    tokens = []
-   for caracter in cadena_entrada:
+   for caracter in texto_entrada:
        print(f'Procesando caracter: {caracter}')
        proximos_estados = set()
        for estado in estados_actuales:
@@ -446,9 +446,3 @@ def analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, toke
        if estado_set in token_actions:
            tokens.append(token_actions[estado_set])
    return tokens
-cadena_entrada = 'A'
-tokens = analizar_cadena(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, cadena_entrada)
-if tokens:
-   print(f'La acción del token es: {tokens}')
-else:
-   print('No se encontró un token válido para la cadena de entrada.')
