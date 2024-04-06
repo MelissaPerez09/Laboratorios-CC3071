@@ -392,7 +392,6 @@ def generate_source_code(yalex_path, output_path):
         f.write("           for accept_state in accept_states:\n")
         f.write("               token_actions[accept_state] = token_action\n")
         f.write("       return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions\n")
-        f.write("special_tokens = {'+': 'print (\"Operador de suma\" )', '-': 'print (\"Operador de resta\" )', '*': 'print (\"Operador de multiplicación\" )', '(': 'print (\"LPAREN\" )', ')': 'print (\"RPAREN\" )', '=': 'print (\"Operador de asignación\" )', '>': 'print (\"Operador mayor que\" )', '<': 'print (\"Operador menor que\" )', '/': 'print(\"Operador de división\")', 'True': 'print(\"BOOL\")', 'False': 'print(\"BOOL\")', 'if': 'print(\"IF\")', 'else': 'print(\"ELSE\")', 'for': 'print(\"FOR\")', 'while': 'print(\"WHILE\")', 'do': 'print(\"DO\")', 'int': 'print(\"INT\")', 'float': 'print(\"FLOAT\")'}\n")
         f.write("def draw_afnd(transitions, start_state, accept_states, token_actions):\n")
         f.write("   graph = Digraph(format='png')\n")
         f.write("   for state in transitions.keys():\n")
@@ -456,10 +455,6 @@ def generate_source_code(yalex_path, output_path):
         f.write("       linea = linea.strip().split()\n")
         f.write("       for j, token in enumerate(linea):\n")
         f.write("           match_found = False\n")
-        f.write("           if token in special_tokens:\n")
-        f.write("               tokens.append(special_tokens[token])\n")
-        f.write("               lineas_tokens.append((i, j))\n")
-        f.write("               match_found = True\n")
         f.write("           if not match_found:\n")
         f.write("               estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)\n")
         f.write("               for caracter in token:\n")
@@ -489,3 +484,5 @@ def generate_source_code(yalex_path, output_path):
 
         
     print(">>> LexicalAnalyzer.py created successfully!")
+
+# programmed by @melissaperez_

@@ -18,3 +18,10 @@ Inicio del desarrollo de un generador de analizadores léxicos basados en YALex.
 El código funciona en una interfaz gráfica que permite abrir un archivo con la extesión _.yal_, recibe una especificación de componentes léxicos para generar un autómata que reconoce los componentes léxicos especificados.
 
 La interfaz gráfica cuenta con un botón para abrir el archivo, un editor donde se puede modificar el archivo que se abrió, un botón 'analizar' para ejecutar las funciones del código y una terminal donde imprime lo que sucede en el análisis.
+
+## Laboratorio D
+Finalización del desarrollo de un generador léxico basado en YALex y su ejecución con textos de prueba para identificar tokens con las reglas descritas.
+
+Al igual que el laboratorio C funciona con una interfaz gráfica. En este caso, en el apartado de _'LA Generator'_ se encuentra el generador del código fuente del analizador léxico que recibe como entrada un archivo escrito en YALex para devolver un diccionario con los tokens donde la llave es la acción y el valor es la expresión regular. Este genera el código fuente que implementa todo el analizador para que pueda ejecutarse de forma independiente a otras clases o módulos. 
+
+Para ejecutar el código fuente es necesario dirigirse al apartado _'Analyzer'_ donde recibe un archivo de texto con los caracteres a evaluar, devuelve los tokens y  ejecuta las acciones en la terminal.

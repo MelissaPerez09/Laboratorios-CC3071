@@ -377,9 +377,7 @@ class DFAUnion:
                 token_actions[accept_state] = token_action
         return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions
 
-special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', 
-                  '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")', 'True': 'print("BOOL")', ';': 'print("Punto y coma")', ':': 'print("Dos puntos")',
-                  'False': 'print("BOOL")', 'if': 'print("IF")', 'else': 'print("ELSE")', 'for': 'print("FOR")', 'while': 'print("WHILE")', 'let': 'print("LET")', 'int': 'print("INT")', 'float': 'print("FLOAT")', 'print': 'print("PRINT")', 'return': 'print("RETURN")'}
+
 def draw_afnd(transitions, start_state, accept_states, token_actions):
     graph = Digraph(format='png')
     for state in transitions.keys():
@@ -447,10 +445,6 @@ def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_en
         linea = linea.strip().split()
         for j, token in enumerate(linea):
             match_found = False
-            if token in special_tokens:
-                tokens.append(special_tokens[token])
-                lineas_tokens.append((i, j))
-                match_found = True
             if not match_found:
                 estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
                 for caracter in token:
@@ -482,3 +476,5 @@ def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_en
 
 texto_entrada = "./chars/02hard.txt"
 tokens, errores = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada)
+
+# programmed by @melissaperez_

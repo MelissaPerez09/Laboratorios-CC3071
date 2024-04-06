@@ -43,16 +43,16 @@ class LexicalAnalyzerApp:
         # Botones y áreas de texto para el generador LA
         self.open_button_generator = ttk.Button(self.root, text="Open YALex file", command=self.open_YALexfile)
         self.generate_src_button = ttk.Button(self.root, text="Generate Source Code", command=self.generate_source_code_from_YALex)
-        self.text_area_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
-        self.output_terminal_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
+        self.text_area_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=30)
+        self.output_terminal_generator = ScrolledText(self.root, wrap=tk.WORD, width=125, height=15)
+        self.save_button_generator = ttk.Button(self.root, text="Save file", command=self.save_file_generator)
 
         # Botones y áreas de texto para el analizador
         self.open_button_analyzer = ttk.Button(self.root, text="Open chars file", command=self.open_TXTfile)
         self.analyze_button = ttk.Button(self.root, text="Analyze", command=self.analyze)
-        self.text_area_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=25)
-        self.output_terminal_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=10)
-
-        self.save_button = ttk.Button(self.root, text="Save file", command=self.save_file)
+        self.text_area_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=15)
+        self.output_terminal_analyzer = ScrolledText(self.root, wrap=tk.WORD, width=125, height=30)
+        self.save_button_analyzer = ttk.Button(self.root, text="Save file", command=self.save_file_analyzer)
     
     def show_generator_ui(self):
         # Ocultar elementos de UI del analizador
@@ -60,9 +60,10 @@ class LexicalAnalyzerApp:
 
         # Mostrar elementos de UI del generador LA
         self.open_button_generator.pack()
-        self.generate_src_button.pack()
         self.text_area_generator.pack(expand=True, fill=tk.BOTH)
+        self.generate_src_button.pack()
         self.output_terminal_generator.pack(expand=True, fill=tk.BOTH) 
+        self.save_button_generator.pack()
 
     def hide_generator_ui(self):
         # Ocultar elementos de UI del generador LA
@@ -70,6 +71,7 @@ class LexicalAnalyzerApp:
         self.generate_src_button.pack_forget()
         self.text_area_generator.pack_forget()
         self.output_terminal_generator.pack_forget() 
+        self.save_button_generator.pack_forget()
         
 
     def show_analyzer_ui(self):
@@ -81,7 +83,7 @@ class LexicalAnalyzerApp:
         self.text_area_analyzer.pack(expand=True, fill=tk.BOTH)
         self.analyze_button.pack()
         self.output_terminal_analyzer.pack(expand=True, fill=tk.BOTH)
-        self.save_button.pack()
+        self.save_button_analyzer.pack()
 
     def hide_analyzer_ui(self):
         # Ocultar elementos de UI del analizador
@@ -89,7 +91,7 @@ class LexicalAnalyzerApp:
         self.text_area_analyzer.pack_forget()
         self.analyze_button.pack_forget()
         self.output_terminal_analyzer.pack_forget()
-        self.save_button.pack_forget()
+        self.save_button_analyzer.pack_forget()
 
     """
     Open file
@@ -117,7 +119,14 @@ class LexicalAnalyzerApp:
     """
     Save file
     """
-    def save_file(self):
+    def save_file_generator(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".yal", filetypes=[("YALex Files", "*.yal")])
+        if file_path:
+            with open(file_path, 'w') as file:
+                content = self.text_area_generator.get('1.0', tk.END)
+                file.write(content)
+                
+    def save_file_analyzer(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
         if file_path:
             with open(file_path, 'w') as file:
@@ -181,62 +190,5 @@ class LexicalAnalyzerApp:
                 self.output_terminal_analyzer.insert(tk.END, f"\n>-----------------------------------\nAn error occurred: {e}\n------------------------------------\n")
         else:
             messagebox.showinfo("Info", "Please open a text file to analyze.")
-
-
-    """
-    Analyze and draw
-    reads the content of the text area, parses the YALex file, generates the regex for all the tokens,
-    returns the regex for all the tokens and draws the DFA and AFND
-    """
-    def analyze_and_draw(self):
-        self.output_terminal_generator.insert(tk.END, "\n>-----------------------------------\nReading and analyzing the file...\n------------------------------------\n")
-        content = self.text_area_generator.get('1.0', tk.END)
-        with open('temp.yal', 'w') as temp_file:
-            temp_file.write(content)
-
-        parser = YALexParser('temp.yal')
-        parser.parse()
-        tokens = parser.generate_all_regex()
-
-        dfa_union = DFAUnion()
-
-        """
-        Convert transitions
-        :param dfa_transitions: DFA transitions
-        returns the converted transitions
-        """
-        def convert_transitions(dfa_transitions):
-            converted_transitions = {}
-            for (state_frozenset, symbol), next_state_frozenset in dfa_transitions.items():
-                state_str = str(state_frozenset)
-                next_state_str = str(next_state_frozenset)
-
-                if state_str not in converted_transitions:
-                    converted_transitions[state_str] = {}
-
-                if symbol not in converted_transitions[state_str]:
-                    converted_transitions[state_str][symbol] = set()
-
-                converted_transitions[state_str][symbol].add(next_state_str)
-
-            return converted_transitions
-
-        for token, regex in tokens.items():
-            dfa_transitions, start_state, accept_states = applyDirect(regex)
-            draw_dfa(dfa_transitions, start_state, accept_states)
-            os.rename('dfa_graph.png', f'dfa_graph_{token}.png')
-
-            converted_transitions = convert_transitions(dfa_transitions)
-            dfa_union.add_dfa(converted_transitions, start_state, accept_states, token)
-
-        afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
-        draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
-        generated = "\nGenerated afnd.png\n"
-        self.output_terminal_generator.insert(tk.END, generated)
-
-        result_text = "\n".join([f"token_action: {token} -> regex: {regex}" for token, regex in tokens.items()])
-        self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\nAnalyzed tokens:\n{result_text}\n------------------------------------\n-----------------------------------<\n")
-
-        os.remove('temp.yal')
 
 # programmed by @melissaperez_
