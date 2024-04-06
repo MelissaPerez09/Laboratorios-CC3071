@@ -137,32 +137,44 @@ class LexicalAnalyzerApp:
                 self.output_terminal_generator.insert(tk.END, "Source code generated successfully at:\n")
                 self.output_terminal_generator.insert(tk.END, output_path)
                 self.output_terminal_generator.insert(tk.END, "\n------------------------------------\n")
+                return output_path
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")
                 self.output_terminal_generator.insert(tk.END, f"\n>-----------------------------------\nAn error occurred: {e}\n------------------------------------\n")
         else:
             messagebox.showinfo("Info", "Please open a YALex file first.")
+            return None
     
     """
     Use Lexical Analyzer
     """
-    def analyze(self):
-        if self.txt_file_path:
+    def analyze(self, source_code_path=None):
+        if source_code_path or self.txt_file_path:
             try:
-                with open(self.txt_file_path, 'r') as file:
-                    texto_entrada = file.read().strip()
-                tokens, acciones_resultantes = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
+                if source_code_path:
+                    with open(source_code_path, 'r') as file:
+                        texto_entrada = file.read().strip()
+                else:
+                    with open(self.txt_file_path, 'r') as file:
+                        texto_entrada = file.read().strip()
+                tokens, errores = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada)
                 
-                resultado = "\n".join(acciones_resultantes)
+                resultado = ""
                 if tokens:
-                    resultado += f'\n\nTokens: {tokens}'
-                    exec(token)
+                    resultado += 'Tokens:\n' + '\n'.join(map(str, tokens)) + '\n'
                 else:
                     resultado += 'No se encontró un token válido para la cadena de entrada.'
+                
+                erroresF = ""
+                if errores:
+                    for error in errores:
+                        erroresF += f'\nError léxico en la línea {error[0]}, posición {error[1]}: {error[2]}'
+                else:
+                    erroresF += '\nNo se encontraron errores.'
 
-                # Mostrar los resultados en la terminal de salida
                 self.output_terminal_analyzer.insert(tk.END, "\n>-----------------------------------\n")
                 self.output_terminal_analyzer.insert(tk.END, resultado)
+                self.output_terminal_analyzer.insert(tk.END, erroresF)
                 self.output_terminal_analyzer.insert(tk.END, "\n------------------------------------\n")
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")

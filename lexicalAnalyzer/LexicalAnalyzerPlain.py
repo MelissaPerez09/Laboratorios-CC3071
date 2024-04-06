@@ -2,7 +2,7 @@
 from graphviz import Digraph
 import os
 
-tokens = {'print("BOOL")': '(True|False)', 'print ("WHITESPACE")': '[\\w\\t\\n]+', 'print ("ID")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print ("DIGIT")': '[0-9]', 'return PLUS': '\\+', 'return MINUS': '\\-', 'return TIMES': '\\*', 'return DIV': '\\/', 'return LPAREN': '\\(', 'return RPAREN': '\\)'}
+tokens = {'print("FOR")': '(for)', 'print("PRINT")': 'pr(int)', 'print("INT")': '(int)', 'print("WHITESPACE")': '["\\s\\t\\n"]+', 'print("ID")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print("numero")': '\\-?[0-9]+', 'print("Dos puntos")': '\\:', 'print("Operador de suma")': '\\+', 'print("Operador de resta")': '\\-', 'print("Operador de multiplicación")': '\\*', 'print("Operador de divisón")': '\\/', 'print("LPAREN")': '\\(', 'print("RPAREN")': '\\)'}
 
 #Parser regex of tokens
 def parse_special_characters(regex):
@@ -377,8 +377,9 @@ class DFAUnion:
                 token_actions[accept_state] = token_action
         return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions
 
-special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")'}
-
+special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', 
+                  '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")', 'True': 'print("BOOL")', ';': 'print("Punto y coma")', ':': 'print("Dos puntos")',
+                  'False': 'print("BOOL")', 'if': 'print("IF")', 'else': 'print("ELSE")', 'for': 'print("FOR")', 'while': 'print("WHILE")', 'let': 'print("LET")', 'int': 'print("INT")', 'float': 'print("FLOAT")', 'print': 'print("PRINT")', 'return': 'print("RETURN")'}
 def draw_afnd(transitions, start_state, accept_states, token_actions):
     graph = Digraph(format='png')
     for state in transitions.keys():
@@ -434,20 +435,21 @@ def cerradura_epsilon(estados, afnd_transitions):
                     pila.append(prox_estado)
     return cerradura
 
-def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
+def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada):
     with open(texto_entrada, 'r') as file:
         lineas = file.readlines()
 
     tokens = []
     lineas_tokens = []
+    errores = []
 
     for i, linea in enumerate(lineas):
         linea = linea.strip().split()
-        for token in linea:
+        for j, token in enumerate(linea):
             match_found = False
             if token in special_tokens:
                 tokens.append(special_tokens[token])
-                lineas_tokens.append(i)
+                lineas_tokens.append((i, j))
                 match_found = True
             if not match_found:
                 estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
@@ -462,22 +464,21 @@ def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, tok
                     estado_set = eval(estado) if isinstance(estado, str) else estado
                     if estado_set in token_actions:
                         tokens.append(token_actions[estado_set])
-                        lineas_tokens.append(i)
+                        lineas_tokens.append((i, j))
+                        match_found = True
                         break
+            if not match_found:
+                errores.append((i+1, j+1, token))
 
     acciones_ejecutadas = 0
     for i, token in enumerate(tokens):
-        token_linea = lineas[lineas_tokens[i]].strip().split()[acciones_ejecutadas % len(lineas[lineas_tokens[i]].strip().split())]
-        print(f"\nEjecutando acción para '{token_linea}':")
         exec(token)
         acciones_ejecutadas += 1
+        
+    for error in errores:
+        print(f'Error léxico en la línea {error[0]}, posición {error[1]}: {error[2]}')
 
-    return tokens
+    return tokens, errores
 
-texto_entrada = "./chars/01medium.txt"
-tokens = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
-
-if tokens:
-    print(f'\nTokens: {tokens}')
-else:
-    print('No se encontró un token válido para la cadena de entrada.')
+texto_entrada = "./chars/02hard.txt"
+tokens, errores = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada)

@@ -2,7 +2,7 @@
 from graphviz import Digraph
 import os
 
-tokens = {'print regex': '[A-C]([A-C])*', 'print new line': '\\\\n'}
+tokens = {'print("FOR")': '(for)', 'print("PRINT")': 'pr(int)', 'print("INT")': '(int)', 'print("WHITESPACE")': '["\\s\\t\\n"]+', 'print("ID")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print("numero")': '\\-?[0-9]+', 'print("Dos puntos")': '\\:', 'print("Operador de suma")': '\\+', 'print("Operador de resta")': '\\-', 'print("Operador de multiplicación")': '\\*', 'print("Operador de divisón")': '\\/', 'print("LPAREN")': '\\(', 'print("RPAREN")': '\\)'}
 
 #Parser regex of tokens
 def parse_special_characters(regex):
@@ -376,6 +376,7 @@ class DFAUnion:
            for accept_state in accept_states:
                token_actions[accept_state] = token_action
        return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions
+special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")', 'True': 'print("BOOL")', 'False': 'print("BOOL")', 'if': 'print("IF")', 'else': 'print("ELSE")', 'for': 'print("FOR")', 'while': 'print("WHILE")', 'do': 'print("DO")', 'int': 'print("INT")', 'float': 'print("FLOAT")'}
 def draw_afnd(transitions, start_state, accept_states, token_actions):
    graph = Digraph(format='png')
    for state in transitions.keys():
@@ -429,20 +430,42 @@ def cerradura_epsilon(estados, afnd_transitions):
                    cerradura.add(prox_estado)
                    pila.append(prox_estado)
    return cerradura
-def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
-   estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada):
+   lineas = texto_entrada.strip().split('\n')
    tokens = []
-   for caracter in texto_entrada:
-       print(f'Procesando caracter: {caracter}')
-       proximos_estados = set()
-       for estado in estados_actuales:
-           estado_str = str(estado)
-           if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
-               proximos_estados.update(afnd_transitions[estado_str][caracter])
-       estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
-   for estado in estados_actuales:
-       estado_set = eval(estado) if isinstance(estado, str) else estado
-       print(f'Buscando estado {estado_set} en token_actions: {token_actions}')
-       if estado_set in token_actions:
-           tokens.append(token_actions[estado_set])
-   return tokens
+   lineas_tokens = []
+   errores = []
+   for i, linea in enumerate(lineas):
+       linea = linea.strip().split()
+       for j, token in enumerate(linea):
+           match_found = False
+           if token in special_tokens:
+               tokens.append(special_tokens[token])
+               lineas_tokens.append((i, j))
+               match_found = True
+           if not match_found:
+               estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
+               for caracter in token:
+                   proximos_estados = set()
+                   for estado in estados_actuales:
+                       estado_str = str(estado)
+                       if estado_str in afnd_transitions and caracter in afnd_transitions[estado_str]:
+                           proximos_estados.update(afnd_transitions[estado_str][caracter])
+                       estados_actuales = cerradura_epsilon(proximos_estados, afnd_transitions)
+               for estado in estados_actuales:
+                   estado_set = eval(estado) if isinstance(estado, str) else estado
+                   if estado_set in token_actions:
+                       tokens.append(token_actions[estado_set])
+                       lineas_tokens.append((i, j))
+                       match_found = True
+                       break
+           if not match_found:
+               errores.append((i+1, j+1, token))
+   acciones_ejecutadas = 0
+   for i, token in enumerate(tokens):
+       exec(token)
+       acciones_ejecutadas += 1
+   for error in errores:
+       print(f'Error en la linea {error[0]}, posición {error[1]}: {error[2]}')
+   print('\n>> finished execution\n')
+   return tokens, errores
