@@ -151,14 +151,18 @@ class LexicalAnalyzerApp:
             try:
                 with open(self.txt_file_path, 'r') as file:
                     texto_entrada = file.read().strip()
-                tokens = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
+                tokens, acciones_resultantes = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
                 
+                resultado = "\n".join(acciones_resultantes)
                 if tokens:
-                    result = f'Tokens: {tokens}'
+                    resultado += f'\n\nTokens: {tokens}'
+                    exec(token)
                 else:
-                    result = 'No se encontró un token válido para la cadena de entrada.'
+                    resultado += 'No se encontró un token válido para la cadena de entrada.'
+
+                # Mostrar los resultados en la terminal de salida
                 self.output_terminal_analyzer.insert(tk.END, "\n>-----------------------------------\n")
-                self.output_terminal_analyzer.insert(tk.END, result)
+                self.output_terminal_analyzer.insert(tk.END, resultado)
                 self.output_terminal_analyzer.insert(tk.END, "\n------------------------------------\n")
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")

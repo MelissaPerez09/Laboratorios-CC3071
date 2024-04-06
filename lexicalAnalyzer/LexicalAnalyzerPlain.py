@@ -2,7 +2,7 @@
 from graphviz import Digraph
 import os
 
-tokens = {'': '[\\w\\t\\n]+', 'print("Identificador")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print("Número")': '\\-?[0-9]+', 'print("Operador de suma")': '\\+', 'print("Operador de multiplicación")': '\\*', 'print("Operador de asignación")': '\\='}
+tokens = {'print("BOOL")': '(True|False)', 'print ("WHITESPACE")': '[\\w\\t\\n]+', 'print ("ID")': '[A-Za-z]([A-Za-z]|[0-9])*', 'print ("DIGIT")': '[0-9]', 'return PLUS': '\\+', 'return MINUS': '\\-', 'return TIMES': '\\*', 'return DIV': '\\/', 'return LPAREN': '\\(', 'return RPAREN': '\\)'}
 
 #Parser regex of tokens
 def parse_special_characters(regex):
@@ -377,6 +377,8 @@ class DFAUnion:
                 token_actions[accept_state] = token_action
         return afnd_transitions, afnd_start_state, afnd_accept_states, token_actions
 
+special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")'}
+
 def draw_afnd(transitions, start_state, accept_states, token_actions):
     graph = Digraph(format='png')
     for state in transitions.keys():
@@ -432,8 +434,6 @@ def cerradura_epsilon(estados, afnd_transitions):
                     pila.append(prox_estado)
     return cerradura
 
-special_tokens = {'+': 'print ("Operador de suma" )', '-': 'print ("Operador de resta" )', '*': 'print ("Operador de multiplicación" )', '(': 'print ("LPAREN" )', ')': 'print ("RPAREN" )', '=': 'print ("Operador de asignación" )', '>': 'print ("Operador mayor que" )', '<': 'print ("Operador menor que" )', '/': 'print("Operador de división")'}
-
 def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada):
     with open(texto_entrada, 'r') as file:
         lineas = file.readlines()
@@ -444,11 +444,12 @@ def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, tok
     for i, linea in enumerate(lineas):
         linea = linea.strip().split()
         for token in linea:
+            match_found = False
             if token in special_tokens:
-                exec(special_tokens[token])
                 tokens.append(special_tokens[token])
                 lineas_tokens.append(i)
-            else:
+                match_found = True
+            if not match_found:
                 estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
                 for caracter in token:
                     proximos_estados = set()
@@ -462,6 +463,7 @@ def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, tok
                     if estado_set in token_actions:
                         tokens.append(token_actions[estado_set])
                         lineas_tokens.append(i)
+                        break
 
     acciones_ejecutadas = 0
     for i, token in enumerate(tokens):
@@ -472,7 +474,7 @@ def analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, tok
 
     return tokens
 
-texto_entrada = "./chars/01low.txt"
+texto_entrada = "./chars/01medium.txt"
 tokens = analizar_archivo(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions, texto_entrada)
 
 if tokens:
