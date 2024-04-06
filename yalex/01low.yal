@@ -2,11 +2,19 @@
 
 (* Introducir cualquier header aqui *)
 
-let letter = ['A'-'C']
-let regex = letter(letter)*
+let delimitador = [' ''\t''\n']
+let espacioEnBlanco = delimitador+
+let digito = ['0'-'9']
+let numero = '-'?digito+
+let letra = ['A'-'Z''a'-'z']
+let identificador = letra(letra|digito)*
 
-rule tokens = 
-  | regex     { print regex }
-  | '\n'      { print new line }
+rule tokens =
+	  espacioEnBlanco	{ print ("WHITESPACE") }
+  | identificador	  { print("Identificador") }
+  | numero			    { print("Número") }
+  | '+'				      { print("Operador de suma") }
+  | '*'				      { print("Operador de multiplicación") }
+  | '='				      { print("Operador de asignación") }
 
 (* Introducir cualquier trailer aqui *)

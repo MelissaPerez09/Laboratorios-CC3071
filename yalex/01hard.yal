@@ -2,18 +2,29 @@
 
 (* Introducir cualquier header aqui *)
 
-let delim = ['\s''\t''\n']
+let delim = ["\s\t\n"]
 let ws = delim+
-let letters = ['A'-'C''a'-'c']
-let digit = [04172]
-let regex = digit?(digit|letters)*
+let digito = ['0'-'9']
+let numero = '-'?digito+
+let int = ('i''n''t')
+let for = ('f''o''r')
+let print = ('p''r''i''n''t')
+let letra = ['A'-'Z''a'-'z']
+let id = letra(letra|digito)*
 
 rule tokens = 
-     ws       { return ws }
-  | regex     { print("Identificador") }
-  | '\n'      { print new line }
-  | (8*)      { new regex }
-  | (a+b)     { un tab }
-  | digit     { print digit }
+    for       { print("FOR") }
+  | print     { print("PRINT") }
+  | int       { print("INT") }
+  | ws        { print("WHITESPACE") }
+  | id        { print("ID") }
+  | numero    { print("numero") }
+  | ':'       { print("Dos puntos") }
+  | '+'       { print("Operador de suma") }
+  | '-'       { print("Operador de resta") }
+  | '*'       { print("Operador de multiplicación") }
+  | '/'       { print("Operador de divisón") }
+  | '('       { print("LPAREN") }
+  | ')'       { print("RPAREN") }
 
 (* Introducir cualquier trailer aqui *)
