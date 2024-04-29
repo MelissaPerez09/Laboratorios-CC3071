@@ -4,6 +4,7 @@ Define la estructura de la gramática utilizada por el analizador sintáctico
 """
 
 import sys
+import graphviz
 sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
 from lexicalAnalyzer.yalexParser import YALexParser
@@ -151,6 +152,21 @@ def validate_tokens(yapar_tokens, yalex_tokens):
     
     return not missing_in_yalex and not missing_in_yapar
 
+def generate_automata_graph(automata, filename):
+    dot = graphviz.Digraph(format='png')
+
+    for i, state in enumerate(automata.states):
+        label = f"I{i}:\n"
+        for (head, body, dot_position) in state:
+            body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
+            label += f"  {head} -> {' '.join(body_with_dot)}\n"
+        dot.node(str(i), label, shape='box')
+
+    for (state, symbol), next_state in sorted(automata.transitions.items()):
+        dot.edge(str(state_to_index[tuple(state)]), str(next_state), label=symbol)
+
+    dot.render(filename)
+
 # Paths to the files
 yapar_path = './yapar/slr-1.yalp'
 yalex_path = './yalex/slr-1.yal'
@@ -174,17 +190,16 @@ automata.parsing_actions()
 
 print("\nStates:")
 for i, state in enumerate(automata.states):
-    print(f"State {i}:")
+    print(f"I{i}:")
     for (head, body, dot_position) in state:
         body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
         print(f"  {head} -> {' '.join(body_with_dot)}")
     print()
 
 print("Transitions:")
+state_to_index = {tuple(state): index for index, state in enumerate(automata.states)}
 for (state, symbol), next_state in sorted(automata.transitions.items()):
-    print(f"From state {state} on symbol {symbol} go to state {next_state}")
+    print(f"From I{state_to_index[tuple(state)]} with '{symbol}' to I{next_state}")
 print()
 
-print("Parsing actions:")
-for (state, symbol), action in sorted(automata.actions.items()):
-    print(f"In state {state} on symbol {symbol} do {action}")
+generate_automata_graph(automata, 'automataLR(0)')
