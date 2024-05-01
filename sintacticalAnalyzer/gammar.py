@@ -55,6 +55,7 @@ class YAParParser:
         self.tokens = tokens
 
     def print_grammar(self):
+        print("\n----------------------------\nDetected grammar:\n----------------------------")
         for nonterminal, productions in self.grammar.items():
             print(f"{nonterminal} -> {[' '.join(prod) for prod in productions]}")
 
@@ -137,38 +138,51 @@ class AutomataLR0:
 
             
 def extract_token_names(yalex_tokens):
-    # Extraer solo las claves que contienen nombres de tokens desde las acciones de YALex
-    return {token.split()[1].strip("'") for token in yalex_tokens.keys() if token.strip()}
+    token_names = set()
+    for token in yalex_tokens.keys():
+        if token.strip():
+            # Extract token name from print or return statement
+            start_quote = token.find("'") if token.find("'") != -1 else token.find('"')
+            end_quote = token.rfind("'") if token.rfind("'") != -1 else token.rfind('"')
+            if start_quote != -1 and end_quote != -1 and start_quote != end_quote:
+                token_name = token[start_quote + 1:end_quote]
+                token_names.add(token_name)
+            else:
+                print(f"Warning: Token '{token}' does not contain a valid token name")
+    return token_names
 
 def validate_tokens(yapar_tokens, yalex_tokens):
     yalex_token_names = extract_token_names(yalex_tokens)
-    missing_in_yalex = yapar_tokens - yalex_token_names
-    missing_in_yapar = yalex_token_names - yapar_tokens
-    
-    if missing_in_yalex:
-        print("Tokens missing in YALex:", missing_in_yalex)
-    if missing_in_yapar:
-        print("Tokens missing in YAPar:", missing_in_yapar)
-    
-    return not missing_in_yalex and not missing_in_yapar
+    missing_tokens = yapar_tokens - yalex_token_names
+    if missing_tokens:
+        return False, missing_tokens
+    else:
+        return True, None
 
 def generate_automata_graph(automata, filename):
     dot = graphviz.Digraph(format='png')
 
     for i, state in enumerate(automata.states):
-        label = f"I{i}:\n"
+        label = ""
         for (head, body, dot_position) in state:
-            body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
-            label += f"  {head} -> {' '.join(body_with_dot)}\n"
-        dot.node(str(i), label, shape='box')
+            if head == "S'" and dot_position == len(body):
+                label = "ACCEPT"
+                break
+            else:
+                body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
+                label += f"  {head} -> {' '.join(body_with_dot)}\n"
+        dot.node(str(i), label if label != "ACCEPT" else "ACCEPT", shape='box')
 
     for (state, symbol), next_state in sorted(automata.transitions.items()):
         dot.edge(str(state_to_index[tuple(state)]), str(next_state), label=symbol)
 
+    dot.node("start", "", shape="none", width="0", height="0")
+    dot.edge("start", "0", shape="none")
+
     dot.render(filename)
 
 # Paths to the files
-yapar_path = './yapar/slr-1.yalp'
+yapar_path = './yapar/slr-8.yalp'
 yalex_path = './yalex/slr-1.yal'
 
 # Parsing YAPar and YALex
@@ -181,14 +195,18 @@ yalex_parser.parse()
 yalex_tokens = yalex_parser.generate_all_regex()
 
 # Token Validation
-is_valid = validate_tokens(yapar_parser.tokens, yalex_tokens)
-print("Validation Successful:", is_valid)
+is_valid, missing_tokens = validate_tokens(yapar_parser.tokens, yalex_tokens)
+if not is_valid:
+    print(f"\n----------------------------\nToken validation: False\n----------------------------")
+    print(f"(!)ERROR, Tokens missing: {missing_tokens}")
+    exit(1)
+print(f"\n----------------------------\nToken validation: True\n----------------------------")
 
 automata = AutomataLR0(yapar_parser.grammar, yapar_parser.tokens)
 automata.build_states()
 automata.parsing_actions()
 
-print("\nStates:")
+print("\n----------------------------\nStates:\n----------------------------")
 for i, state in enumerate(automata.states):
     print(f"I{i}:")
     for (head, body, dot_position) in state:
@@ -196,7 +214,7 @@ for i, state in enumerate(automata.states):
         print(f"  {head} -> {' '.join(body_with_dot)}")
     print()
 
-print("Transitions:")
+print("----------------------------\nTransitions:\n----------------------------")
 state_to_index = {tuple(state): index for index, state in enumerate(automata.states)}
 for (state, symbol), next_state in sorted(automata.transitions.items()):
     print(f"From I{state_to_index[tuple(state)]} with '{symbol}' to I{next_state}")
