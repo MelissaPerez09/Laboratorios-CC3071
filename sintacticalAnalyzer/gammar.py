@@ -182,7 +182,7 @@ def generate_automata_graph(automata, filename):
     dot.render(filename)
 
 # Paths to the files
-yapar_path = './yapar/slr-8.yalp'
+yapar_path = './yapar/slr-1.yalp'
 yalex_path = './yalex/slr-1.yal'
 
 # Parsing YAPar and YALex
@@ -221,3 +221,64 @@ for (state, symbol), next_state in sorted(automata.transitions.items()):
 print()
 
 generate_automata_graph(automata, 'automataLR(0)')
+
+def first(grammar, symbol, first_sets):
+    if symbol in first_sets:
+        return first_sets[symbol]
+
+    first_result = set()
+    if symbol not in grammar:
+        first_result.add(symbol)
+    else:
+        for production in grammar[symbol]:
+            prod_symbols = production if isinstance(production, tuple) else production.split()
+            for prod_symbol in prod_symbols:
+                if prod_symbol == symbol:
+                    break
+                temp_first = first(grammar, prod_symbol, first_sets)
+                first_result.update(temp_first - {''})
+                if '' not in temp_first:
+                    break
+            else:
+                first_result.add('')
+    first_sets[symbol] = first_result
+    return first_result
+
+def follow(grammar, symbol, follow_sets, first_sets):
+    if symbol not in follow_sets:
+        follow_sets[symbol] = set()
+        if symbol == next(iter(grammar)):
+            follow_sets[symbol].add('$')
+
+    for head, productions in grammar.items():
+        for production in productions:
+            production_parts = production if isinstance(production, tuple) else production.split()
+            for i, part in enumerate(production_parts):
+                if part == symbol:
+                    next_symbols = production_parts[i+1:]
+                    if next_symbols:
+                        next_first = set()
+                        for ns in next_symbols:
+                            next_first.update(first(grammar, ns, first_sets))
+                            if '' not in first(grammar, ns, first_sets):
+                                break
+                        follow_sets[symbol].update(next_first - {''})
+                        if '' in next_first:
+                            follow(grammar, head, follow_sets, first_sets)
+                    else:
+                        if head != symbol:
+                            follow(grammar, head, follow_sets, first_sets)
+                            follow_sets[symbol].update(follow_sets[head])
+    return follow_sets[symbol]
+
+def compute_sets(grammar):
+    first_sets = {}
+    follow_sets = {}
+    for nonterminal in grammar:
+        first(grammar, nonterminal, first_sets)
+        follow(grammar, nonterminal, follow_sets, first_sets)
+    return first_sets, follow_sets
+
+first_sets, follow_sets = compute_sets(yapar_parser.grammar)
+print("FIRST sets:", first_sets)
+print("FOLLOW sets:", follow_sets)
