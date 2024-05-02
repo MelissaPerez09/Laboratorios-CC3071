@@ -67,6 +67,11 @@ def generate_analysis():
 
             generate_automata_graph(automata, 'automataLR(0)')
 
+            # Calcular y mostrar los conjuntos FIRST y FOLLOW
+            first_sets, follow_sets = compute_sets(yapar_parser.grammar)
+            print("FIRST sets:", first_sets)
+            print("FOLLOW sets:", follow_sets)
+
             print("Automata and parser generated successfully!")
     else:
         print("Please load both YALex and YAPar files before generating analysis.")
@@ -79,11 +84,11 @@ frame_yapar = tk.Frame(root)
 frame_yapar.grid(row=1, column=1, padx=10, pady=10)
 
 # Editores de texto
-editor_yalex = Text(frame_yalex, height=20, width=40)
+editor_yalex = Text(frame_yalex, height=20, width=60)
 editor_yalex.pack()
 editor_yalex.filepath = None
 
-editor_yapar = Text(frame_yapar, height=20, width=40)
+editor_yapar = Text(frame_yapar, height=20, width=60)
 editor_yapar.pack()
 editor_yapar.filepath = None
 
@@ -98,7 +103,7 @@ button_open_yapar.grid(row=0, column=1, padx=10, pady=10)
 button_saveas_yalex = tk.Button(frame_yalex, text="Save As", command=lambda: save_as_file(editor_yalex, 'yal'))
 button_saveas_yalex.pack()
 
-button_saveas_yapar = tk.Button(frame_yapar, text="Save", command=lambda: save_as_file(editor_yapar, 'yalp'))
+button_saveas_yapar = tk.Button(frame_yapar, text="Save As", command=lambda: save_as_file(editor_yapar, 'yalp'))
 button_saveas_yapar.pack()
 
 # Botón para generar el analizador
@@ -109,7 +114,7 @@ button_generate.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 console_frame = tk.Frame(root)
 console_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
-console = Text(console_frame, height=10, width=80)
+console = Text(console_frame, height=10, width=100)
 console.pack()
 
 root.mainloop()

@@ -182,7 +182,7 @@ def generate_automata_graph(automata, filename):
     dot.render(filename)
 
 # Paths to the files
-yapar_path = './yapar/slr-1.yalp'
+yapar_path = './yapar/slr-8.yalp'
 yalex_path = './yalex/slr-1.yal'
 
 # Parsing YAPar and YALex
@@ -258,24 +258,29 @@ def follow(grammar, symbol, follow_sets, first_sets):
                     next_symbols = production_parts[i+1:]
                     if next_symbols:
                         next_first = set()
+                        derives_empty = False
                         for ns in next_symbols:
-                            next_first.update(first(grammar, ns, first_sets))
-                            if '' not in first(grammar, ns, first_sets):
+                            temp_first = first(grammar, ns, first_sets)
+                            next_first.update(temp_first - {'ε'})
+                            if 'ε' in temp_first:
+                                derives_empty = True
+                                continue
+                            else:
                                 break
-                        follow_sets[symbol].update(next_first - {''})
-                        if '' in next_first:
-                            follow(grammar, head, follow_sets, first_sets)
+                        if derives_empty:
+                            follow_sets[symbol].update(follow_sets[head])
+                        follow_sets[symbol].update(next_first)
                     else:
                         if head != symbol:
                             follow(grammar, head, follow_sets, first_sets)
                             follow_sets[symbol].update(follow_sets[head])
-    return follow_sets[symbol]
 
 def compute_sets(grammar):
     first_sets = {}
     follow_sets = {}
     for nonterminal in grammar:
         first(grammar, nonterminal, first_sets)
+    for nonterminal in grammar:
         follow(grammar, nonterminal, follow_sets, first_sets)
     return first_sets, follow_sets
 
