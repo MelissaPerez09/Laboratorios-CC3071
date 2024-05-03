@@ -163,7 +163,7 @@ def generate_automata_graph(automata, filename):
     dot = graphviz.Digraph(format='png')
 
     for i, state in enumerate(automata.states):
-        label = ""
+        label = f"I{i}:\n"
         for (head, body, dot_position) in state:
             if head == "S'" and dot_position == len(body):
                 label = "ACCEPT"
@@ -171,13 +171,13 @@ def generate_automata_graph(automata, filename):
             else:
                 body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
                 label += f"  {head} -> {' '.join(body_with_dot)}\n"
-        dot.node(str(i), label if label != "ACCEPT" else "ACCEPT", shape='box')
+        dot.node(f"I{i}", label if label != "ACCEPT" else "ACCEPT", shape='box')
 
     for (state, symbol), next_state in sorted(automata.transitions.items()):
-        dot.edge(str(state_to_index[tuple(state)]), str(next_state), label=symbol)
+        dot.edge(f"I{state_to_index[tuple(state)]}", f"I{next_state}", label=symbol)
 
     dot.node("start", "", shape="none", width="0", height="0")
-    dot.edge("start", "0", shape="none")
+    dot.edge("start", "I0", shape="none")
 
     dot.render(filename)
 

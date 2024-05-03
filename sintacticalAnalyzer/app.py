@@ -64,8 +64,13 @@ def generate_analysis():
             automata = AutomataLR0(yapar_parser.grammar, yapar_parser.tokens)
             automata.build_states()
             automata.parsing_actions()
+            
+            state_to_index = {tuple(state): index for index, state in enumerate(automata.states)}
+            for (state, symbol), next_state in sorted(automata.transitions.items()):
+                print(f"From I{state_to_index[tuple(state)]} with '{symbol}' to I{next_state}")
+            print()
 
-            generate_automata_graph(automata, 'automataLR(0)')
+            generate_automata_graph(automata, 'automataLR(0)', state_to_index)
 
             # Calcular y mostrar los conjuntos FIRST y FOLLOW
             first_sets, follow_sets = compute_sets(yapar_parser.grammar)
