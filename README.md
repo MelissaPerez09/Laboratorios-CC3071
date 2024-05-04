@@ -25,3 +25,14 @@ Finalización del desarrollo de un generador léxico basado en YALex y su ejecuc
 Al igual que el laboratorio C funciona con una interfaz gráfica. En este caso, en el apartado de _'LA Generator'_ se encuentra el generador del código fuente del analizador léxico que recibe como entrada un archivo escrito en YALex para devolver un diccionario con los tokens donde la llave es la acción y el valor es la expresión regular. Este genera el código fuente que implementa todo el analizador para que pueda ejecutarse de forma independiente a otras clases o módulos. 
 
 Para ejecutar el código fuente es necesario dirigirse al apartado _'Analyzer'_ donde recibe un archivo de texto con los caracteres a evaluar, devuelve los tokens y  ejecuta las acciones en la terminal.
+
+## Laboratorio E
+Desarrollo de un generador de analizadores sintáticos basados en YAPar.
+
+Utiliza la extracción de tokens de un archivo YALex para validar que se encuentren definidos en la gramática y viceversa. Si alguno de los tokens que utiliza la gramática YAPar no se encuentra en YALex muestra un error e idenitifica los tokens faltantes.
+
+Luego de la validación continúa con la generación del autómata LR(0) donde identifica los elementos que pertenecen al corazón, los que no y el estado de aceptación.
+
+Por último, realiza el cálculo de las funciones primero y siguiente mostrando el resultado como un conjunto.
+
+Para la ejecución del código, debe correrse el archivo _'app.py'_ y abrir los dos archivos (YALex y YAPar) para presionar el botón _generate_ y que realice el proceso antes mencionado.

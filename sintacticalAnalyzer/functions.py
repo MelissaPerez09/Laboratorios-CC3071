@@ -3,6 +3,14 @@ functions.py
 Calculate the first and follow sets of a given grammar
 """
 
+
+"""
+Calcula el conjunto FIRST de un símbolo no terminal en una gramática
+:param grammar: la gramática
+:param symbol: el símbolo no terminal
+:param first_sets: diccionario con los conjuntos FIRST calculados
+:return: el conjunto FIRST del símbolo no terminal
+"""
 def first(grammar, symbol, first_sets):
     if symbol in first_sets:
         return first_sets[symbol]
@@ -25,6 +33,14 @@ def first(grammar, symbol, first_sets):
     first_sets[symbol] = first_result
     return first_result
 
+"""
+Calcula el conjunto FOLLOW de un símbolo no terminal en una gramática
+:param grammar: la gramática
+:param symbol: el símbolo no terminal
+:param follow_sets: diccionario con los conjuntos FOLLOW calculados
+:param first_sets: diccionario con los conjuntos FIRST calculados
+:return: el conjunto FOLLOW del símbolo no terminal
+"""
 def follow(grammar, symbol, follow_sets, first_sets):
     if symbol not in follow_sets:
         follow_sets[symbol] = set()
@@ -64,3 +80,5 @@ def compute_sets(grammar):
     for nonterminal in grammar:
         follow(grammar, nonterminal, follow_sets, first_sets)
     return first_sets, follow_sets
+
+# programmed by @melissaperez_

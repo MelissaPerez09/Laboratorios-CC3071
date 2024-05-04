@@ -11,8 +11,8 @@ from sintacticalAnalyzer.gammar import *
 from sintacticalAnalyzer.functions import *
 
 # Paths to the files
-yapar_path = './yapar/slr-1.yalp'
-yalex_path = './yalex/slr-1.yal'
+yapar_path = './yapar/medium.yalp'
+yalex_path = './yalex/medium.yal'
 
 # Parsing YAPar and YALex
 yapar_parser = YAParParser(yapar_path)
@@ -72,3 +72,5 @@ generate_automata_graph(automata, 'automataLR(0)')
 first_sets, follow_sets = compute_sets(yapar_parser.grammar)
 print("FIRST sets:", first_sets)
 print("FOLLOW sets:", follow_sets)
+
+# programmed by @melissaperez_

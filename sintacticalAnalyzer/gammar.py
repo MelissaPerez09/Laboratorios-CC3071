@@ -13,6 +13,9 @@ class YAParParser:
     def __init__(self, yapar_path):
         self.yapar_path = yapar_path
     
+    """
+    Parsea el archivo YAPar para obtener la gramática y los tokens
+    """
     def parse(self):
         grammar = {}
         tokens = set()
@@ -54,6 +57,9 @@ class YAParParser:
         self.grammar = grammar
         self.tokens = tokens
 
+    """
+    Imprime la gramática y los tokens
+    """
     def print_grammar(self):
         print("\n----------------------------\nDetected grammar:\n----------------------------")
         for nonterminal, productions in self.grammar.items():
@@ -69,11 +75,17 @@ class AutomataLR0:
         self.actions = {}
         self.augment_grammar()
 
+    """
+    Agrega un símbolo inicial a la gramática
+    """
     def augment_grammar(self):
         self.start_symbol = 'S\''
         original_start_symbol = next(iter(self.grammar))
         self.grammar[self.start_symbol] = [(original_start_symbol, '$')]
 
+    """
+    Calcula el cierre de un conjunto de ítems (función CERRADURA)
+    """
     def closure(self, items):
         closure_set = set(items)
         while True:
@@ -91,6 +103,9 @@ class AutomataLR0:
             closure_set |= new_items
         return closure_set
 
+    """
+    Calcula el conjunto de ítems al que se llega desde un estado con un símbolo dado (función IR_A)
+    """
     def goto(self, state, symbol):
         new_state = set()
         for (head, body, dot_position) in state:
@@ -98,6 +113,9 @@ class AutomataLR0:
                 new_state.add((head, body, dot_position + 1))
         return self.closure(new_state)
 
+    """
+    Construye los estados del autómata LR(0)
+    """
     def build_states(self):
         initial_item = (self.start_symbol, self.grammar[self.start_symbol][0], 0)
         initial_state = self.closure({initial_item})
@@ -119,6 +137,9 @@ class AutomataLR0:
 
         self.transitions = {k: self.states.index(v) for k, v in transitions.items()}
 
+    """
+    Calcula las acciones de la tabla de análisis sintáctico
+    """
     def parsing_actions(self):
         for state_index, state in enumerate(self.states):
             for item in state:
@@ -136,7 +157,9 @@ class AutomataLR0:
                         next_state = self.transitions[(tuple(state), symbol)]
                         self.actions[(state_index, symbol)] = ('shift', next_state)
 
-            
+"""
+Extrae los nombres de los tokens de un diccionario de tokens de YALex
+"""
 def extract_token_names(yalex_tokens):
     token_names = set()
     for token in yalex_tokens.keys():
@@ -150,6 +173,9 @@ def extract_token_names(yalex_tokens):
                 print(f"Warning: Token '{token}' does not contain a valid token name")
     return token_names
 
+"""
+Valida que los tokens de YAPar estén contenidos en los tokens de YALex
+"""
 def validate_tokens(yapar_tokens, yalex_tokens):
     yalex_token_names = extract_token_names(yalex_tokens)
     missing_tokens = yapar_tokens - yalex_token_names
@@ -158,6 +184,10 @@ def validate_tokens(yapar_tokens, yalex_tokens):
     else:
         return True, None
 
+"""
+Genera el grafo del autómata LR(0)
+Identifica los que pertenecen al corazón y los que no
+"""
 def generate_automata_graph(automata, filename):
     dot = graphviz.Digraph(format='png')
     added_transitions = set()
@@ -167,7 +197,7 @@ def generate_automata_graph(automata, filename):
     for i, state in enumerate(automata.states):
         accept_state = False
         for (head, body, dot_position) in state:
-            if head == "S'" and body == ('expression', '$') and dot_position == len(body):
+            if head == "S'" and body[-1] == '$' and dot_position == len(body):
                 accept_state = True
                 break
 
@@ -204,3 +234,5 @@ def generate_automata_graph(automata, filename):
     dot.edge("start", "I0", shape="none")
 
     dot.render(filename)
+    
+# programmed by @melissaperez_

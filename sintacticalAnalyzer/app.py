@@ -16,6 +16,7 @@ from tkinter import filedialog, Text
 root = tk.Tk()
 root.title("Sintactical Analyzer Generator")
 
+# Funciones para abrir y guardar archivos
 def open_file(editor, filetypes):
     filepath = filedialog.askopenfilename(filetypes=filetypes)
     if filepath:
@@ -34,6 +35,7 @@ def save_as_file(editor, default_extension):
             file.write(content)
         editor.filepath = filepath
 
+# Función para imprimir en la consola
 def print_to_console(msg):
     console.insert(tk.END, msg + '\n')
     console.see(tk.END)
@@ -44,6 +46,7 @@ def print(*args, **kwargs):
     msg = ' '.join(map(str, args))
     print_to_console(msg)
 
+# Función para generar el análisis
 def generate_analysis():
     # Uso de los parsers
     if hasattr(editor_yalex, 'filepath') and editor_yalex.filepath and hasattr(editor_yapar, 'filepath') and editor_yapar.filepath:
@@ -54,12 +57,15 @@ def generate_analysis():
         yalex_parser.parse()
         yalex_tokens = yalex_parser.generate_all_regex()
 
+        print("********************************")
+        
         # Validación de tokens y generación de autómatas
         is_valid, missing_tokens = validate_tokens(yapar_parser.tokens, yalex_tokens)
         if not is_valid:
-            print(f"\nToken validation: False\n(!)Error, Tokens missing: {missing_tokens}")
+            print(f"Token validation: False\n(!)Error, Tokens missing: {missing_tokens}")
+            print("--------------------------------")
         else:
-            print("\nToken validation: True")
+            print("Token validation: True")
             
             print("\nDetected grammar:")
             for nonterminal, productions in yapar_parser.grammar.items():
@@ -78,7 +84,8 @@ def generate_analysis():
             print("\nFIRST sets:", first_sets)
             print("\nFOLLOW sets:", follow_sets)
 
-            print("Automata and parser generated successfully!")
+            print("\nAutomata generated successfully!")
+            print("--------------------------------")
     else:
         print("Please load both YALex and YAPar files before generating analysis.")
 
@@ -124,3 +131,5 @@ console = Text(console_frame, height=10, width=100)
 console.pack()
 
 root.mainloop()
+
+# programmed by @melissaperez_
