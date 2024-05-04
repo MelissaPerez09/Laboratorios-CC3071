@@ -4,11 +4,7 @@ Define la estructura de la gramática utilizada por el analizador sintáctico
 Se utiliza en la interfaz gráfica
 """
 
-import sys
 import graphviz
-sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
-
-from lexicalAnalyzer.yalexParser import YALexParser
 
 class YAParParser:
     def __init__(self, yapar_path):
@@ -160,87 +156,47 @@ def validate_tokens(yapar_tokens, yalex_tokens):
     else:
         return True, None
 
+import graphviz
+
 def generate_automata_graph(automata, filename, state_to_index):
     dot = graphviz.Digraph(format='png')
 
     for i, state in enumerate(automata.states):
-        label = f"I{i}:\n"
+        accept_state = False
         for (head, body, dot_position) in state:
-            if head == "S'" and dot_position == len(body):
-                label = "ACCEPT"
+            if head == "S'" and body == ('expression', '$') and dot_position == len(body):
+                accept_state = True
                 break
-            else:
+
+        if accept_state:
+            label = 'ACCEPT'
+        else:
+            label = f"I{i}:\n"
+            heart_productions = []
+            body_productions = []
+
+            for (head, body, dot_position) in state:
                 body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
-                label += f"  {head} -> {' '.join(body_with_dot)}\n"
-        dot.node(f"I{i}", label if label != "ACCEPT" else "ACCEPT", shape='box')
+                production_label = f"{head} -> {' '.join(body_with_dot)}"
+
+                if (head == "S'" and dot_position == 0) or dot_position != 0:
+                    heart_productions.append(production_label)
+                else:
+                    body_productions.append(production_label)
+
+            if heart_productions:
+                label += "HEART:\n" + "\n".join(heart_productions) + "\n"
+            if body_productions:
+                label += "\nBODY:\n" + "\n".join(body_productions)
+
+        dot.node(f"I{i}", label, shape='box')
 
     for (state, symbol), next_state in sorted(automata.transitions.items()):
-        dot.edge(f"I{state_to_index[tuple(state)]}", f"I{next_state}", label=symbol)
+        from_index = state_to_index[tuple(state)]
+        dot.edge(f"I{from_index}", f"I{next_state}", label=symbol)
 
     dot.node("start", "", shape="none", width="0", height="0")
     dot.edge("start", "I0", shape="none")
 
     dot.render(filename, cleanup=True)
     dot.view(filename, cleanup=True)
-
-def first(grammar, symbol, first_sets):
-    if symbol in first_sets:
-        return first_sets[symbol]
-
-    first_result = set()
-    if symbol not in grammar:
-        first_result.add(symbol)
-    else:
-        for production in grammar[symbol]:
-            prod_symbols = production if isinstance(production, tuple) else production.split()
-            for prod_symbol in prod_symbols:
-                if prod_symbol == symbol:
-                    break
-                temp_first = first(grammar, prod_symbol, first_sets)
-                first_result.update(temp_first - {''})
-                if '' not in temp_first:
-                    break
-            else:
-                first_result.add('')
-    first_sets[symbol] = first_result
-    return first_result
-
-def follow(grammar, symbol, follow_sets, first_sets):
-    if symbol not in follow_sets:
-        follow_sets[symbol] = set()
-        if symbol == next(iter(grammar)):
-            follow_sets[symbol].add('$')
-
-    for head, productions in grammar.items():
-        for production in productions:
-            production_parts = production if isinstance(production, tuple) else production.split()
-            for i, part in enumerate(production_parts):
-                if part == symbol:
-                    next_symbols = production_parts[i+1:]
-                    if next_symbols:
-                        next_first = set()
-                        derives_empty = False
-                        for ns in next_symbols:
-                            temp_first = first(grammar, ns, first_sets)
-                            next_first.update(temp_first - {'ε'})
-                            if 'ε' in temp_first:
-                                derives_empty = True
-                                continue
-                            else:
-                                break
-                        if derives_empty:
-                            follow_sets[symbol].update(follow_sets[head])
-                        follow_sets[symbol].update(next_first)
-                    else:
-                        if head != symbol:
-                            follow(grammar, head, follow_sets, first_sets)
-                            follow_sets[symbol].update(follow_sets[head])
-
-def compute_sets(grammar):
-    first_sets = {}
-    follow_sets = {}
-    for nonterminal in grammar:
-        first(grammar, nonterminal, first_sets)
-    for nonterminal in grammar:
-        follow(grammar, nonterminal, follow_sets, first_sets)
-    return first_sets, follow_sets

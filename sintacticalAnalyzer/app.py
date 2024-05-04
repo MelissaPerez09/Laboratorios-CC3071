@@ -8,6 +8,7 @@ sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
 from lexicalAnalyzer.yalexParser import *
 from sintacticalAnalyzer.gammarUI import *
+from sintacticalAnalyzer.functions import *
 
 import tkinter as tk
 from tkinter import filedialog, Text
@@ -48,7 +49,6 @@ def generate_analysis():
     if hasattr(editor_yalex, 'filepath') and editor_yalex.filepath and hasattr(editor_yapar, 'filepath') and editor_yapar.filepath:
         yapar_parser = YAParParser(editor_yapar.filepath)
         yapar_parser.parse()
-        yapar_parser.print_grammar()
 
         yalex_parser = YALexParser(editor_yalex.filepath)
         yalex_parser.parse()
@@ -57,25 +57,26 @@ def generate_analysis():
         # Validación de tokens y generación de autómatas
         is_valid, missing_tokens = validate_tokens(yapar_parser.tokens, yalex_tokens)
         if not is_valid:
-            print(f"Token validation: False\nTokens missing: {missing_tokens}")
+            print(f"\nToken validation: False\n(!)Error, Tokens missing: {missing_tokens}")
         else:
-            print("Token validation: True")
-
+            print("\nToken validation: True")
+            
+            print("\nDetected grammar:")
+            for nonterminal, productions in yapar_parser.grammar.items():
+                print(f"{nonterminal} -> {[' '.join(prod) for prod in productions]}")
+            
             automata = AutomataLR0(yapar_parser.grammar, yapar_parser.tokens)
             automata.build_states()
             automata.parsing_actions()
             
             state_to_index = {tuple(state): index for index, state in enumerate(automata.states)}
-            for (state, symbol), next_state in sorted(automata.transitions.items()):
-                print(f"From I{state_to_index[tuple(state)]} with '{symbol}' to I{next_state}")
-            print()
 
             generate_automata_graph(automata, 'automataLR(0)', state_to_index)
 
             # Calcular y mostrar los conjuntos FIRST y FOLLOW
             first_sets, follow_sets = compute_sets(yapar_parser.grammar)
-            print("FIRST sets:", first_sets)
-            print("FOLLOW sets:", follow_sets)
+            print("\nFIRST sets:", first_sets)
+            print("\nFOLLOW sets:", follow_sets)
 
             print("Automata and parser generated successfully!")
     else:
