@@ -1,0 +1,21 @@
+%{
+/* Declaraciones de código C/C++ que se incluyen una sola vez */
+%}
+
+%token ID [a-zA-Z][a-zA-Z0-9]*
+%token PLUS \+
+%token TIMES \*
+%token LPAREN \(
+%token RPAREN \)
+%token WS [ \t\n]+
+
+IGNORE WS
+
+%%
+rule tokens =
+      ID          { return 'ID' }
+    | +           { return 'PLUS' }
+    | *           { return 'TIMES' }
+    | (           { return 'LPAREN' }
+    | )           { return 'RPAREN' }
+%%

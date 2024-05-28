@@ -11,8 +11,8 @@ from sintacticalAnalyzer.gammar import *
 from sintacticalAnalyzer.functions import *
 
 # Paths to the files
-yapar_path = './yapar/medium.yalp'
-yalex_path = './yalex/medium.yal'
+yapar_path = './yapar/gfg3.yalp'
+yalex_path = './yalex/gfg3.yal'
 
 # Parsing YAPar and YALex
 yapar_parser = YAParParser(yapar_path)
@@ -69,8 +69,23 @@ print()
 
 generate_automata_graph(automata, 'automataLR(0)')
 
-first_sets, follow_sets = compute_sets(yapar_parser.grammar)
-print("FIRST sets:", first_sets)
-print("FOLLOW sets:", follow_sets)
+print("----------------------------\nFunctions:\n----------------------------")
+first_sets = {}
+for nonterminal in yapar_parser.grammar:
+    first(yapar_parser.grammar, nonterminal, first_sets)
+print("FIRST sets:")
+if "S'" in first_sets:
+    first_sets.pop("S'")
+for key, value in first_sets.items():
+    print(f"{key}: {value}")
+
+follow_sets = {}
+for nonterminal in yapar_parser.grammar:
+    follow(yapar_parser.grammar, nonterminal, follow_sets, first_sets)
+print("\nFOLLOW sets:")
+if "S'" in follow_sets:
+    follow_sets.pop("S'")
+for key, value in follow_sets.items():
+    print(f"{key}: {value}")
 
 # programmed by @melissaperez_

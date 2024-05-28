@@ -1,0 +1,22 @@
+%token A
+%token B
+%token C
+%token D
+%token E
+%token H
+
+%%
+
+S: a B D h ;
+
+B: c C ;
+
+C: b C  | ε ;
+
+D: E F ;
+
+E: g | ε ;
+
+F: f | ε ;
+
+%%

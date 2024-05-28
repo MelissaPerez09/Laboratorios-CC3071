@@ -80,9 +80,24 @@ def generate_analysis():
             generate_automata_graph(automata, 'automataLR(0)', state_to_index)
 
             # Calcular y mostrar los conjuntos FIRST y FOLLOW
-            first_sets, follow_sets = compute_sets(yapar_parser.grammar)
-            print("\nFIRST sets:", first_sets)
-            print("\nFOLLOW sets:", follow_sets)
+            print("----------------------------\nFunctions:\n----------------------------")
+            first_sets = {}
+            for nonterminal in yapar_parser.grammar:
+                first(yapar_parser.grammar, nonterminal, first_sets)
+            print("FIRST sets:")
+            if "S'" in first_sets:
+                first_sets.pop("S'")
+            for key, value in first_sets.items():
+                print(f"{key}: {value}")
+            
+            follow_sets = {}
+            for nonterminal in yapar_parser.grammar:
+                follow(yapar_parser.grammar, nonterminal, follow_sets, first_sets)
+            print("\nFOLLOW sets:")
+            if "S'" in follow_sets:
+                follow_sets.pop("S'")
+            for key, value in follow_sets.items():
+                print(f"{key}: {value}")
 
             print("\nAutomata generated successfully!")
             print("--------------------------------")
