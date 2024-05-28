@@ -9,14 +9,16 @@ sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 from lexicalAnalyzer.yalexParser import YALexParser
 from sintacticalAnalyzer.gammar import *
 from sintacticalAnalyzer.functions import *
+from sintacticalAnalyzer.SRLTable import *
 
 # Paths to the files
-yapar_path = './yapar/gfg3.yalp'
-yalex_path = './yalex/gfg3.yal'
+yapar_path = './yapar/slr-1.yalp'
+yalex_path = './yalex/slr-1.yal'
 
 # Parsing YAPar and YALex
 yapar_parser = YAParParser(yapar_path)
 yapar_parser.parse()
+grammar_rules = generate_grammar_rules(yapar_parser.grammar)
 yapar_parser.print_grammar()
 
 yalex_parser = YALexParser(yalex_path)
@@ -61,11 +63,13 @@ for i, state in enumerate(automata.states):
             print(production)
     print()
 
+"""
 print("----------------------------\nTransitions:\n----------------------------")
 state_to_index = {tuple(state): index for index, state in enumerate(automata.states)}
 for (state, symbol), next_state in sorted(automata.transitions.items()):
     print(f"From I{state_to_index[tuple(state)]} with '{symbol}' to I{next_state}")
 print()
+"""
 
 generate_automata_graph(automata, 'automataLR(0)')
 
@@ -87,5 +91,13 @@ if "S'" in follow_sets:
     follow_sets.pop("S'")
 for key, value in follow_sets.items():
     print(f"{key}: {value}")
+
+
+# SLR Table
+actions, gotos = automata.parsing_table()
+
+terminals = sorted(list(yapar_parser.tokens))
+non_terminals = sorted(list(yapar_parser.grammar.keys()))
+print_parsing_table(actions, gotos, terminals, non_terminals, len(automata.states), grammar_rules)
 
 # programmed by @melissaperez_

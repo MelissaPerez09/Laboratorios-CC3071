@@ -7,7 +7,7 @@ import sys
 import graphviz
 sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
-from lexicalAnalyzer.yalexParser import YALexParser
+from functions import first, follow
 
 class YAParParser:
     def __init__(self, yapar_path):
@@ -156,6 +156,41 @@ class AutomataLR0:
                     if symbol in self.tokens:  # Shift condition.
                         next_state = self.transitions[(tuple(state), symbol)]
                         self.actions[(state_index, symbol)] = ('shift', next_state)
+    
+    def parsing_table(self):
+        # Calcula las acciones y las transiciones goto de la tabla SLR.
+        action_table = {}
+        goto_table = {}
+
+        # Calculamos los conjuntos FIRST y FOLLOW
+        first_sets = {}
+        for non_terminal in self.grammar:
+            first(self.grammar, non_terminal, first_sets)
+
+        follow_sets = {}
+        for non_terminal in self.grammar:
+            follow(self.grammar, non_terminal, follow_sets, first_sets)
+
+        # Recorremos cada estado del autómata
+        for state_index, state in enumerate(self.states):
+            for item in state:
+                head, body, dot_position = item
+                if dot_position < len(body):  # Todavía hay símbolos después del punto
+                    symbol = body[dot_position]
+                    if symbol in self.tokens:  # Es un terminal
+                        next_state = self.transitions[(tuple(state), symbol)]
+                        action_table[(state_index, symbol)] = ('shift', next_state)
+                    elif symbol in self.grammar:  # Es un no terminal
+                        next_state = self.transitions[(tuple(state), symbol)]
+                        goto_table[(state_index, symbol)] = next_state
+                else:  # No hay más símbolos después del punto: es una reducción
+                    if head == self.start_symbol:
+                        action_table[(state_index, '$')] = ('accept',)
+                    else:
+                        for follow_symbol in follow_sets[head]:
+                            action_table[(state_index, follow_symbol)] = ('reduce', head, body)
+
+        return action_table, goto_table
 
 """
 Extrae los nombres de los tokens de un diccionario de tokens de YALex
