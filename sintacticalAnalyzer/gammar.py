@@ -7,7 +7,7 @@ import sys
 import graphviz
 sys.path.insert(0, '/Users/melissa/Desktop/UVG/lenguajes/CC3071-LabAB/')
 
-from functions import first, follow
+from sintacticalAnalyzer.functions import first, follow
 
 class YAParParser:
     def __init__(self, yapar_path):
@@ -196,17 +196,7 @@ class AutomataLR0:
 Extrae los nombres de los tokens de un diccionario de tokens de YALex
 """
 def extract_token_names(yalex_tokens):
-    token_names = set()
-    for token in yalex_tokens.keys():
-        if token.strip():
-            start_quote = token.find("'") if token.find("'") != -1 else token.find('"')
-            end_quote = token.rfind("'") if token.rfind("'") != -1 else token.rfind('"')
-            if start_quote != -1 and end_quote != -1 and start_quote != end_quote:
-                token_name = token[start_quote + 1:end_quote]
-                token_names.add(token_name)
-            else:
-                print(f"Warning: Token '{token}' does not contain a valid token name")
-    return token_names
+    return set(yalex_tokens.keys())
 
 """
 Valida que los tokens de YAPar estén contenidos en los tokens de YALex
