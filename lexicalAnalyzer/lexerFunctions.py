@@ -1,9 +1,3 @@
-#LexicalAnalyzer.py
-from graphviz import Digraph
-import os
-
-tokens = {'WHITESPACE': '["\s\t\n"]+', 'ID': '[A-Za-z]([A-Za-z]|[0-9])*', 'NUMBER': '\-?[0-9]+', 'PLUS': '\+', 'MINUS': '\-', 'TIMES': '\*', 'DIV': '\/', 'LPAREN': '\(', 'RPAREN': '\)'}
-
 special_tokens = {'+': 'PLUS', '-': 'MINUS', '*': 'TIMES', '(': 'LPAREN', ')': 'RPAREN', 
                   '=': 'EQ', '>': 'GT', '<': 'LT', '/': 'DIV', 'True': 'BOOL', ';': 'PUNCOM', ':': 'TWODOTS',
                   'False': 'BOOL', 'if': 'IF', 'else': 'ELSE', 'for': 'FOR', 'while': 'WHILE', 'let': 'LET', 'int': 'INT', 'float': 'FLOAT', 'print': 'PRINT', 'return': 'RETURN'}
@@ -475,9 +469,3 @@ def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_en
         print(f'Error léxico en la línea {error[0]}, posición {error[1]}: {error[2]}')
 
     return tokens, errores
-
-texto_entrada = "./chars/Ejemplo1.txt"
-tokens, errores = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_entrada)
-print(tokens)
-
-# programmed by @melissaperez_

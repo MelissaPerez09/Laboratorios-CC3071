@@ -236,10 +236,10 @@ def generate_automata_graph(automata, filename):
                 accept_state = True
                 break
 
+        label = f"I{i}:\n"
         if accept_state:
-            label = 'ACCEPT'
+            label += 'ACCEPT'
         else:
-            label = f"I{i}:\n"
             heart_productions = []
             body_productions = []
 

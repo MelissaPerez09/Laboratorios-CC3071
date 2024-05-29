@@ -34,6 +34,7 @@ class YALexParser:
                     if '|' in token_pattern:
                         token_pattern = token_pattern.split('|')[1].strip()
                     token_action = parts[1].split('}')[0].strip()
+                    token_action = token_action.replace('"', "").replace("'", "")
                     self.token_rules.append((token_action, token_pattern))
                 elif line == '':
                     in_rule = False
@@ -57,9 +58,11 @@ class YALexParser:
     def generate_all_regex(self):
         regexes = {}
         for token_action, token_pattern in self.token_rules:
+            action = token_action.split()[-1].strip(' ')
+            action = action.replace('"', "'")
             regex = self.replace_definitions(token_pattern)
             regex = self.escape_special_chars(regex)
-            regexes[token_action] = regex
+            regexes[action] = regex
         return regexes
 
     """
@@ -122,11 +125,10 @@ class YALexParser:
     
 """
 # Debbuging class
-parser = YALexParser('./yalex/slr-1.yal')
+parser = YALexParser('./yalex/Ejemplo1.yal')
 parser.parse()
 regexes = parser.generate_all_regex()
-full_regex = parser.combine_regexes(regexes)
-print(f"{regexes} \n\n{full_regex}")
+print(regexes)
 """
 
 # programmed by @melissaperez_

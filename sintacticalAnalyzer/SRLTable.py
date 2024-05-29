@@ -15,6 +15,7 @@ def generate_grammar_rules(grammar):
     return grammar_rules
 
 def print_parsing_table(action_table, goto_table, terminals, non_terminals, num_states, grammar_rules):
+    print("\n----------------------------\nSRL Table:\n----------------------------")
     # Ensure terminals and non_terminals are sorted lists
     terminals = sorted(list(terminals))
     non_terminals = sorted(list(non_terminals))
