@@ -110,6 +110,8 @@ class AutomataLR0:
         new_state = set()
         for (head, body, dot_position) in state:
             if dot_position < len(body) and body[dot_position] == symbol:
+                if symbol == '$' and dot_position == len(body) - 1:
+                    continue
                 new_state.add((head, body, dot_position + 1))
         return self.closure(new_state)
 
@@ -141,21 +143,29 @@ class AutomataLR0:
     Calcula las acciones de la tabla de análisis sintáctico
     """
     def parsing_actions(self):
+        first_sets = {}
+        for non_terminal in self.grammar:
+            first(self.grammar, non_terminal, first_sets)
+
+        follow_sets = {}
+        for non_terminal in self.grammar:
+            follow(self.grammar, non_terminal, follow_sets, first_sets)
+        
         for state_index, state in enumerate(self.states):
             for item in state:
                 head, body, dot_position = item
                 if dot_position == len(body):
-                    if head == self.start_symbol:
+                    if head == self.start_symbol and body[-1] == '$':
                         self.actions[(state_index, '$')] = ('accept', None)
                     else:
-                        for prod_index, prod in enumerate(self.grammar[head]):
-                            if prod == body:
-                                self.actions[(state_index, symbol)] = ('reduce', prod_index)
+                        for follow_symbol in follow_sets.get(head, []):
+                            self.actions[(state_index, follow_symbol)] = ('reduce', (head, body))
                 else:
                     symbol = body[dot_position]
-                    if symbol in self.tokens:  # Shift condition.
-                        next_state = self.transitions[(tuple(state), symbol)]
-                        self.actions[(state_index, symbol)] = ('shift', next_state)
+                    if symbol in self.tokens:  # Shift condition
+                        next_state_index = self.transitions.get((tuple(state), symbol))
+                        if next_state_index is not None:
+                            self.actions[(state_index, symbol)] = ('shift', next_state_index)
     
     def parsing_table(self):
         # Calcula las acciones y las transiciones goto de la tabla SLR.
@@ -222,32 +232,33 @@ def generate_automata_graph(automata, filename):
     for i, state in enumerate(automata.states):
         accept_state = False
         for (head, body, dot_position) in state:
-            if head == "S'" and body[-1] == '$' and dot_position == len(body):
+            if head == "S'" and body[-1] == '$' and dot_position == len(body) - 1:
                 accept_state = True
                 break
 
         label = f"I{i}:\n"
+        heart_productions = []
+        body_productions = []
+
+        for (head, body, dot_position) in state:
+            body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
+            production_label = f"{head} -> {' '.join(body_with_dot)}"
+
+            if (head == "S'" and dot_position == 0) or dot_position != 0:
+                heart_productions.append(production_label)
+            else:
+                body_productions.append(production_label)
+
+        if heart_productions:
+            label += "HEART:\n" + "\n".join(heart_productions) + "\n"
+        if body_productions:
+            label += "\nBODY:\n" + "\n".join(body_productions)
+
+        # Aplicar un estilo especial al nodo de aceptación
         if accept_state:
-            label += 'ACCEPT'
+            dot.node(f"I{i}", label, shape='box', style='filled', fillcolor='lightgrey', color='blue')
         else:
-            heart_productions = []
-            body_productions = []
-
-            for (head, body, dot_position) in state:
-                body_with_dot = body[:dot_position] + ('•',) + body[dot_position:]
-                production_label = f"{head} -> {' '.join(body_with_dot)}"
-
-                if (head == "S'" and dot_position == 0) or dot_position != 0:
-                    heart_productions.append(production_label)
-                else:
-                    body_productions.append(production_label)
-
-            if heart_productions:
-                label += "HEART:\n" + "\n".join(heart_productions) + "\n"
-            if body_productions:
-                label += "\nBODY:\n" + "\n".join(body_productions)
-
-        dot.node(f"I{i}", label, shape='box')
+            dot.node(f"I{i}", label, shape='box')
 
     for (state, symbol), next_state in sorted(automata.transitions.items()):
         from_index = state_to_index[tuple(state)]
