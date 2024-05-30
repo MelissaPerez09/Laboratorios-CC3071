@@ -154,12 +154,12 @@ class AutomataLR0:
         for state_index, state in enumerate(self.states):
             for item in state:
                 head, body, dot_position = item
-                if dot_position == len(body):
-                    if head == self.start_symbol and body[-1] == '$':
-                        self.actions[(state_index, '$')] = ('accept', None)
-                    else:
-                        for follow_symbol in follow_sets.get(head, []):
-                            self.actions[(state_index, follow_symbol)] = ('reduce', (head, body))
+                if head == self.start_symbol and body[-1] == '$' and dot_position == len(body) - 1:
+                    self.actions[(state_index, '$')] = ('accept',)
+                    print(f"Estado de aceptación encontrado: I{state_index}")
+                elif dot_position == len(body):  # Reducción general (no estado de aceptación)
+                    for follow_symbol in follow_sets.get(head, []):
+                        self.actions[(state_index, follow_symbol)] = ('reduce', (head, body))
                 else:
                     symbol = body[dot_position]
                     if symbol in self.tokens:  # Shift condition
@@ -194,11 +194,17 @@ class AutomataLR0:
                         next_state = self.transitions[(tuple(state), symbol)]
                         goto_table[(state_index, symbol)] = next_state
                 else:  # No hay más símbolos después del punto: es una reducción
-                    if head == self.start_symbol:
+                    if head == "S'" and body[dot_position - 1] == '$':
                         action_table[(state_index, '$')] = ('accept',)
+                        print(f"Estado de aceptación encontrado: {state_index}")
                     else:
                         for follow_symbol in follow_sets[head]:
                             action_table[(state_index, follow_symbol)] = ('reduce', head, body)
+
+        # Check for accept actions from parsing_actions
+        for (state, symbol), action in self.actions.items():
+            if action[0] == 'accept':
+                action_table[(state, symbol)] = action
 
         return action_table, goto_table
 
