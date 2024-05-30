@@ -18,9 +18,9 @@ def main():
     # Analizador Léxico
     lex_parser = YALexParser("./yalex/Ejemplo1.yal")
     lex_parser.parse()
-    regex_tokens = lex_parser.generate_all_regex()  # Diccionario de definiciones de regex
+    regex_tokens = lex_parser.generate_all_regex()
 
-    # Inicializar el analizador de gramática y cargar la gramática desde un archivo YAPar
+    # Obtención de la gramática
     gram_parser = YAParParser('./yapar/Ejemplo1.yalp')
     gram_parser.parse()
 
@@ -46,17 +46,20 @@ def main():
             print(f'Error léxico en línea {error[0]}, posición {error[1]}: {error[2]}')
         return
 
-    # Añadir el token de fin de archivo a la lista de tokens para el análisis sintáctico
-    tokens.append('$')
-    print("LOS TOKENSSSSS:", tokens)
-
     # Inicializar el autómata LR(0) y construir la tabla de análisis sintáctico
     automata = AutomataLR0(gram_parser.grammar, gram_parser.tokens)
     automata.build_states()
-    action_table, goto_table = automata.parsing_table()
+    automata.parsing_actions()
+    actions, gotos = automata.parsing_table()
+    print("Action Table:")
+    for k, v in sorted(actions.items()):
+        print(f"{k}: {v}")
+    print("\nGoto Table:")
+    for k, v in sorted(gotos.items()):
+        print(f"{k}: {v}")
 
     # Realizar análisis sintáctico SLR
-    if simulate_slr_parsing(tokens, action_table, goto_table):
+    if simulate_slr_parsing(tokens, actions, gotos):
         print("Análisis completado con éxito. La entrada es sintácticamente correcta.")
     else:
         print("Análisis completado con errores.")

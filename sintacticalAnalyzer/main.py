@@ -12,8 +12,8 @@ from sintacticalAnalyzer.functions import *
 from sintacticalAnalyzer.SRLTable import *
 
 # Paths to the files
-yapar_path = './yapar/slr-1.yalp'
-yalex_path = './yalex/slr-1.yal'
+yapar_path = './yapar/low.yalp'
+yalex_path = './yalex/low.yal'
 
 # Parsing YAPar and YALex
 yapar_parser = YAParParser(yapar_path)
@@ -96,8 +96,18 @@ for key, value in follow_sets.items():
 # SLR Table
 actions, gotos = automata.parsing_table()
 
+"""
+print("\n----------------------------\nParsing Table:\n----------------------------")
+print("Action Table:")
+for k, v in sorted(actions.items()):
+    print(f"{k}: {v}")
+print("\nGoto Table:")
+for k, v in sorted(gotos.items()):
+    print(f"{k}: {v}")
+
+
 terminals = sorted(list(yapar_parser.tokens))
 non_terminals = sorted(list(yapar_parser.grammar.keys()))
 print_parsing_table(actions, gotos, terminals, non_terminals, len(automata.states), grammar_rules)
-
+"""
 # programmed by @melissaperez_
