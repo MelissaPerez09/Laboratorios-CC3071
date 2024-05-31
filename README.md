@@ -36,3 +36,12 @@ Luego de la validación continúa con la generación del autómata LR(0) donde i
 Por último, realiza el cálculo de las funciones primero y siguiente mostrando el resultado como un conjunto.
 
 Para la ejecución del código, debe correrse el archivo _'app.py'_ y abrir los dos archivos (YALex y YAPar) para presionar el botón _generate_ y que realice el proceso antes mencionado.
+
+## Laboratorio F
+Finalización del analizador sintáctico y unión con el analizador léxico.
+
+Su funcionamiento consta de obtener tres archivos de entrada, uno con la definición de tokens (YALex), uno con la definición de la gramática (YAPar) y uno con la cadena a evaluar.
+
+El analizador léxico evalúa los tokens existentes en la cadena para que puedan ser enviados uno a uno al analizador sintáctico. El analizador sintáctico realiza la tabla de análisis SLR utilizando los estados de la gramática y las funciones primero y siguiente. Luego, recibe los tokens que le pasa el analizador léxico para que generen el _parsing_ de la tabla para identificar las acciones que corresponden a cada estado.
+
+Al finalizar todo el proceso y las impresiones de las acciones, el analizador permite aceptar la entrada o no. Esto depende si encuentra errores léxicos, sintácticos o la cadena no es aceptada por la gramática.

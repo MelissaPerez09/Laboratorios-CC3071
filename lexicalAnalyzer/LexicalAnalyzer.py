@@ -5,7 +5,7 @@ import os
 tokens = {'WHITESPACE': '["\\s\\t\\n"]+', 'ID': '[A-Za-z]([A-Za-z]|[0-9])*', 'NUMBER': '\\-?[0-9]+', 'PLUS': '\\+', 'MINUS': '\\-', 'TIMES': '\\*', 'DIV': '\\/', 'LPAREN': '\\(', 'RPAREN': '\\)'}
 
 special_tokens = {'+': 'PLUS', '-': 'MINUS', '*': 'TIMES', '(': 'LPAREN', ')': 'RPAREN', 
-                  '=': 'EQ', '>': 'GT', '<': 'LT', '/': 'DIV', 'True': 'BOOL', ';': 'PUNCOM', ':': 'TWODOTS',
+                  '=': 'EQ', '>': 'GT', '<': 'LT', '/': 'DIV', 'True': 'BOOL', ';': 'PUNCOM', ':': 'TWODOTS', '{': 'LBRACE', '}': 'RBRACE', '==': 'EQEQ', '!=': 'NEQ', '>=': 'GTEQ', '<=': 'LTEQ', '&&': 'AND', '||': 'OR', 'True': 'BOOL',
                   'False': 'BOOL', 'if': 'IF', 'else': 'ELSE', 'for': 'FOR', 'while': 'WHILE', 'let': 'LET', 'int': 'INT', 'float': 'FLOAT', 'print': 'PRINT', 'return': 'RETURN'}
 
 #Parser regex of tokens

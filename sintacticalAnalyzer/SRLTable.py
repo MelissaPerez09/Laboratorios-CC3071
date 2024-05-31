@@ -49,3 +49,6 @@ def print_parsing_table(action_table, goto_table, terminals, non_terminals, num_
         rows.append(row)
 
     print(tabulate(rows, headers=headers, tablefmt='grid'))
+    
+    with open('table.txt', 'w') as f:
+        f.write(tabulate(rows, headers=headers, tablefmt='grid'))
