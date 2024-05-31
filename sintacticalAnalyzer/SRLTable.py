@@ -3,8 +3,6 @@ SLRTable.py
 Creación de tabla de análisis sintáctico SRL
 """
 
-from sintacticalAnalyzer.gammar import *
-from sintacticalAnalyzer.functions import first, follow
 from tabulate import tabulate
 
 def generate_grammar_rules(grammar):

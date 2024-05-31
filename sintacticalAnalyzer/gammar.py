@@ -156,7 +156,7 @@ class AutomataLR0:
                 head, body, dot_position = item
                 if head == self.start_symbol and body[-1] == '$' and dot_position == len(body) - 1:
                     self.actions[(state_index, '$')] = ('accept',)
-                    print(f"Estado de aceptación encontrado: I{state_index}")
+                    #print(f"Estado de aceptación encontrado: I{state_index}")
                 elif dot_position == len(body):  # Reducción general (no estado de aceptación)
                     for follow_symbol in follow_sets.get(head, []):
                         self.actions[(state_index, follow_symbol)] = ('reduce', (head, body))
