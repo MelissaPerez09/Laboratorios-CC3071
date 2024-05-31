@@ -435,17 +435,12 @@ def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_en
     with open(texto_entrada, 'r') as file:
         lineas = file.readlines()
 
-    tokens = []
-    lineas_tokens = []
-    errores = []
-
     for i, linea in enumerate(lineas):
         linea = linea.strip().split()
         for j, token in enumerate(linea):
             match_found = False
             if token in special_tokens:
-                tokens.append(special_tokens[token])
-                lineas_tokens.append((i, j))
+                yield (special_tokens[token], None)
                 match_found = True
             estados_actuales = cerradura_epsilon({afnd_start_state}, afnd_transitions)
             for caracter in token:
@@ -458,14 +453,9 @@ def analizar_archivo(afnd_transitions, afnd_start_state, token_actions, texto_en
             for estado in estados_actuales:
                 estado_set = eval(estado) if isinstance(estado, str) else estado
                 if estado_set in token_actions:
-                    tokens.append(token_actions[estado_set])
-                    lineas_tokens.append((i, j))
+                    yield (token_actions[estado_set], None)
                     match_found = True
                     break
             if not match_found:
-                errores.append((i+1, j+1, token))
-
-    for error in errores:
-        print(f'Error léxico en la línea {error[0]}, posición {error[1]}: {error[2]}')
-
-    return tokens, errores
+                yield (None, (i+1, j+1, token))
+    yield ('$', None)

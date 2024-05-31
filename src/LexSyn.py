@@ -38,13 +38,7 @@ def LexSyn(yalex_path, yapar_path, chars_path):
     afnd_transitions, afnd_start_state, afnd_accept_states, token_actions = dfa_union.union()
     draw_afnd(afnd_transitions, afnd_start_state, afnd_accept_states, token_actions)
     
-    tokens, lexical_errors = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, chars_path)
-    
-    if lexical_errors:
-        print("Se encontraron errores léxicos:")
-        for error in lexical_errors:
-            print(f'Error léxico en línea {error[0]}, posición {error[1]}: {error[2]}')
-        return
+    token_generator = analizar_archivo(afnd_transitions, afnd_start_state, token_actions, chars_path)
     
     """
     Análisis Sintáctico
@@ -60,9 +54,6 @@ def LexSyn(yalex_path, yapar_path, chars_path):
     print_parsing_table(actions, gotos, yapar_parser.tokens, yapar_parser.grammar.keys(), len(automata.states), grammar_rules)
 
     # Realizar análisis sintáctico SLR
-    if simulate_slr_parsing(tokens, actions, gotos):
-        print("\nLa entrada es sintácticamente correcta.")
-    else:
-        print("Análisis completado con errores.")
+    simulate_slr_parsing(token_generator, actions, gotos)
 
 # programmed by @melissaperez_
