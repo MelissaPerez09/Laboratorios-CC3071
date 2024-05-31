@@ -12,6 +12,13 @@ from sintacticalAnalyzer.gammar import *
 from sintacticalAnalyzer.SRLTable import *
 from sintacticalAnalyzer.parser import *
 
+def check_slr_conflicts(action_table):
+    conflicts = []
+    for key, actions in action_table.items():
+        if isinstance(actions, list) and len(actions) > 1:
+            conflicts.append((key, actions))
+    return conflicts
+
 def LexSyn(yalex_path, yapar_path, chars_path):
     # Archivo de entrada
     yalex_parser = YALexParser(yalex_path)
@@ -53,7 +60,16 @@ def LexSyn(yalex_path, yapar_path, chars_path):
     actions, gotos = automata.parsing_table()
     print_parsing_table(actions, gotos, yapar_parser.tokens, yapar_parser.grammar.keys(), len(automata.states), grammar_rules)
 
-    # Realizar análisis sintáctico SLR
-    simulate_slr_parsing(token_generator, actions, gotos)
+    # Verificar conflictos en la tabla SLR
+    conflicts = check_slr_conflicts(actions)
+    if conflicts:
+        print("\nConflictos en la tabla SLR encontrados:")
+        for conflict in conflicts:
+            print(f"Estado/Símbolo: {conflict[0]}, Acciones: {conflict[1]}")
+        print("La gramática no es SLR.")
+        return
+    else:
+        # Realizar análisis sintáctico SLR
+        simulate_slr_parsing(token_generator, actions, gotos)
 
 # programmed by @melissaperez_

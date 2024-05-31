@@ -18,7 +18,7 @@ def simulate_slr_parsing(token_generator, action_table, goto_table):
     for current_token, error in token_generator:
         # Si hay un error léxico, se imprime y se ignora el token
         if error:
-            print(f"\n(!) ERROR LÉXICO en línea {error[0]}, posición {error[1]} caracter: '{error[2]}'")
+            print(f"\n(!) ERROR LÉXICO \nEn línea {error[0]}, posición {error[1]} caracter: '{error[2]}'")
             error_detected = True
             continue
         
@@ -32,8 +32,7 @@ def simulate_slr_parsing(token_generator, action_table, goto_table):
             print(f"Pila actual: {stack}")
 
             if action is None:
-                print(f"Error: No se encuentra acción para el estado {current_state} y el token '{current_token}'")
-                print(f"Estado final de la pila: {stack}")
+                print(f"\n(!) ERROR SINTÁCTICO \nNo se encuentra acción para el estado {current_state} y el token '{current_token}'")
                 error_detected = True
                 break
 
@@ -47,7 +46,7 @@ def simulate_slr_parsing(token_generator, action_table, goto_table):
                     print("\n (✓) La entrada es aceptada.")
                 # Si se detectó un error léxico, se rechaza la entrada
                 else:
-                    print("\n (!) La entrada no es aceptada debido a errores léxicos.")
+                    print("\n (!) La entrada no es aceptada.")
                 return not error_detected
             
             # Accion: Shift
@@ -64,19 +63,13 @@ def simulate_slr_parsing(token_generator, action_table, goto_table):
                 goto_state = goto_table.get((stack[-1], production_head))
                 stack.extend([production_head, goto_state])
                 print(f"Acción: Reduce, mediante {production_head} -> {' '.join(production_body)}")
-            
-            # Accion: Error
-            elif action_type == 'error':
-                print(f"Error: {args[0]}")
-                error_detected = True
-                break
     
     # Si no encuentra error sintáctico, se acepta la entrada
     if not error_detected:
         print("\n (✓) La entrada es aceptada.")
     # Si encuentra error sintáctico, se rechaza la entrada
     else:
-        print("\n (!) La entrada no es aceptada por la gramática.")
+        print("\n (!) La entrada no es aceptada.")
     return not error_detected
 
 # programmed by @melissaperez_
