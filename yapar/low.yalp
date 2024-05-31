@@ -1,23 +1,23 @@
 /* Gramática de complejidad baja */
 /* Sigue la gramática SLR: */
-/* E → E + T | T */
+/* E → E + T */
+/* E → E - T */
+/* E → T */
 /* T → NUMBER */
-/* T → T ∗ F | F */
 
-%token ID
-%token NUMBER
-%token SUMA
-%token MULTI
-%token IGUAL
-IGNORE WS
+%token NUMBER 
+%token WHITESPACE 
+%token PLUS 
+%token MINUS
 
 %%
 
 expression:
     expression PLUS term
+  | expression MINUS term
   | term
-  ;
+;
 
 term:
-    NUMBER
-  ;
+  NUMBER
+;

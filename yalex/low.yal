@@ -1,17 +1,14 @@
 (* YALex con dificultad baja *)
-(* *)
 
-let delimitador = [' ''\t''\n']
-let espacioEnBlanco = delimitador+
-let digito = ['0'-'9']
-let numero = '-'?digito+
-let letra = ['A'-'Z''a'-'z']
-let identificador = letra(letra|digito)*
+let delim = ["\s\t\n"]
+let ws = delim+
+let digit = ['0'-'9']
+let number = digit+
+let plus = '\+'
+let minus = '\-'
 
-rule tokens =
-	espacioEnBlanco	      { print ("WS") }
-  | identificador	      { print ("ID") }
-  | numero			      { print ("NUMBER") }
-  | '+'				      { print ("SUMA") }
-  | '*'				      { print ("MULTI") }
-  | '='				      { print ("IGUAL") }
+rule tokens = 
+    ws      { return 'WS' }
+  | number  { return 'NUMBER' }
+  | plus    { return 'PLUS' }
+  | minus   { return 'MINUS' }

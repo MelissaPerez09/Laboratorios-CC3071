@@ -1,24 +1,19 @@
-(* Lexer para Simple Language - Operadores de comparación y estructuras condicionales *)
+(* YALex con dificultad media *)
 
-let delim = [' ''\t''\n']
+let delim = ["\s\t\n"]
 let ws = delim+
 let letter = ['A'-'Z''a'-'z']
 let digit = ['0'-'9']
 let id = letter(letter|digit)*
-let number = digit+
+let number = '-'?digit+
 
-rule tokens = parse
-    ws        {}                              (* Ignora espacios en blanco *)
-  | id        { return 'ID' }                 (* Devuelve el token para identificadores *)
-  | number    { return 'NUMBER' }             (* Devuelve el token para números *)
-  | '>'       { return 'GREATER' }            (* Mayor que *)
-  | '<'       { return 'LESS' }               (* Menor que *)
-  | '='       { return 'EQUALS' }             (* Igual que *)
-  | '!='      { return 'NOT_EQUALS' }         (* Diferente de *)
-  | '>='      { return 'GREATER_EQUALS' }     (* Mayor o igual que *)
-  | '<='      { return 'LESS_EQUALS' }        (* Menor o igual que *)
-  | "if"      { return 'IF' }                 (* if *)
-  | "then"    { return 'THEN' }               (* then *)
-  | "else"    { return 'ELSE' }               (* else *)
-
-(* Cualquier código adicional necesario aquí *)
+rule tokens = 
+    ws        { return 'WS' }
+  | id        { return 'ID' }
+  | number    { return 'NUMBER' }
+  | '+'       { return 'PLUS' }
+  | '-'       { return 'MINUS' }
+  | '*'       { return 'TIMES' }
+  | '/'       { return 'DIV' }
+  | '('       { return 'LPAREN' }
+  | ')'       { return 'RPAREN' }

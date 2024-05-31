@@ -1,29 +1,33 @@
-%token ID NUMBER
-%token GREATER LESS EQUALS NOT_EQUALS GREATER_EQUALS LESS_EQUALS
-%token IF THEN ELSE
-IGNORE WS
+/* Gramática de complejidad media */
+/* Sigue la gramática SLR: */
+/* E → E + T | E - T | T */
+/* T → T * F | T / F | F */
+/* F → ( E ) | ID | NUMBER */
+
+
+%token ID
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIV
+%token NUMBER
+%token LPAREN RPAREN
+%token WS
 
 %%
 
-s:
-    IF c THEN e
-  | IF c THEN e ELSE e
-  ;
-
-c:
-    e op e
-  ;
-
-e:
-    ID
+expression:
+    expression PLUS term
+  | expression MINUS term
+  | term
+;
+term:
+    term TIMES factor
+  | term DIV factor
+  | factor
+;
+factor:
+    LPAREN expression RPAREN
+  | ID
   | NUMBER
-  ;
-
-op:
-    GREATER
-  | LESS
-  | EQUALS
-  | NOT_EQUALS
-  | GREATER_EQUALS
-  | LESS_EQUALS
-  ;
+;
