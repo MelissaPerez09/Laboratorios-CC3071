@@ -1,0 +1,40 @@
+/* Gramática de complejidad alta */
+
+%token ID 
+%token NUMBER 
+%token WHITESPACE 
+%token PLUS 
+%token MINUS 
+%token TIMES 
+%token DIV 
+%token LPAREN 
+%token RPAREN 
+%token EQ 
+
+%%
+
+statement:
+  | assignment
+;
+
+assignment:
+    ID EQ expression
+;
+
+expression:
+    expression PLUS term
+  | expression MINUS term
+  | term
+;
+
+term:
+    term TIMES factor
+  | term DIV factor
+  | factor
+;
+
+factor:
+    LPAREN expression RPAREN
+  | NUMBER
+  | ID
+;
